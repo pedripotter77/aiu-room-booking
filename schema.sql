@@ -18,4 +18,4 @@ CREATE TABLE bookings (
    start_time TIMESTAMP NOT NULL,
    end_time TIMESTAMP NOT NULL,  
    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-); 
+);
