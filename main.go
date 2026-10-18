@@ -19,6 +19,14 @@ type Message struct {
 	Message string `json:"message"`
 }
 
+type Room struct {
+	ID   int    `json:"id"`
+	FloorID int   `json:"floor_id"`
+	RoomNumber string `json:"room_number"`
+	RoomType string `json:"room_type"`
+	Status string `json:"status"`
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
