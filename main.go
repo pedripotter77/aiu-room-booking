@@ -65,6 +65,28 @@ func main() {
 
 	http.HandleFunc("/api/rooms", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+
+		rows, err := db.Query("SELECT id, floor_id, room_number, room_type, status FROM rooms")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var rooms []Room
+
+		for rows.Next() {
+			var r Room
+			err := rows.Scan(&r.ID, &r.FloorID, &r.RoomNumber, &r.RoomType, &r.Status)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			rooms = append(rooms, r)
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(rooms)
 	})
 
 	fmt.Println("Server is running on http://localhost:8080")
