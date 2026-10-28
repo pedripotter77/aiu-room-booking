@@ -27,6 +27,13 @@ type Room struct {
 	Status string `json:"status"`
 }
 
+type BookingRequest struct {
+	RoomID    int    `json:"room_id"`
+	UserName    string    `json:"user_name"`
+	StartTime string `json:"start_time"`
+	EndTime   string `json:"end_time"`
+}
+
 func main() {
 	err := godotenv.Load()
 	if err != nil {
@@ -87,6 +94,33 @@ func main() {
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(rooms)
+	})
+
+	http.HandleFunc("/api/bookings", func(w http.ResponseWriter, r *http.Request) {
+       if r.Method != http.MethodPost {
+		   http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		   return
+	   }
+	
+
+	   var req BookingRequest 
+
+	   err := json.NewDecoder(r.Body).Decode(&req)
+	   if err != nil {
+		   http.Error(w, "Invalid input data: "+ err.Error(), http.StatusBadRequest)
+		   return
+	   }
+
+	   log.Printf("Новая бронь: RoomID=%d, User=%s, From=%s, To=%s",
+		   req.RoomID, req.UserName, req.StartTime, req.EndTime,
+	   )
+
+	   w.Header().Set("Content-Type", "application/json")
+	   w.WriteHeader(http.StatusCreated)
+	   w.NewEncoder(w).Encode(map[string]string{
+		       "status": "success",
+		       "message": "Бронь успешно создана!",
+	   })
 	})
 
 	fmt.Println("Server is running on http://localhost:8080")
