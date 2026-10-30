@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
@@ -60,6 +61,11 @@ func main() {
 	fmt.Println("Successfully connected to the database!")
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		
 		w.Header().Set("Content-Type", "application/json")
 
 		response := Message{
@@ -111,13 +117,45 @@ func main() {
 		   return
 	   }
 
+	   startTime, err1 := time.Parse("2006-01-02 15:04:05", req.StartTime)
+	   endTime, err2 := time.Parse("2006-01-02 15:04:05", req.EndTime)
+	   if err1 != nil || err2 != nil {
+		   http.Error(w, "Invalid date format. Use YYYY-MM-DD HH:MM:SS", http.StatusBadRequest)
+		   return
+	   }
+
+	   if !endTime.After(startTime) {
+		   http.Error(w, "End time must be after start time", http.StatusBadRequest)
+		   return
+	   }
+
+	   var existingID int
+	   checkQuery := `SELECT id FROM bookings WHERE room_id = $1 AND start_time < $2 AND end_time > $3 LIMIT 1;`
+
+	   err = db.QueryRow(checkQuery, req.RoomID, endTime, startTime).Scan(&existingID)
+	   if err == nil {
+		   http.Error(w, "Room is already booked for the selected time period", http.StatusConflict)
+		   return
+	   } else if err != sql.ErrNoRows {
+		   http.Error(w, "Database error: " + err.Error(), http.StatusInternalServerError)
+		   return
+	   }
+
+	   insertQuery := `INSERT INTO bookings (room_id, user_name, start_time, end_time) VALUES ($1, $2, $3, $4);`
+
+	   _, err = db.Exec(insertQuery, req.RoomID, req.UserName, startTime, endTime)
+	   if err != nil {
+		   http.Error(w, "Failed to save booking: " + err.Error(), http.StatusInternalServerError)
+		   return
+	   }
+
 	   log.Printf("Новая бронь: RoomID=%d, User=%s, From=%s, To=%s",
 		   req.RoomID, req.UserName, req.StartTime, req.EndTime,
 	   )
 
 	   w.Header().Set("Content-Type", "application/json")
 	   w.WriteHeader(http.StatusCreated)
-	   w.NewEncoder(w).Encode(map[string]string{
+	   json.NewEncoder(w).Encode(map[string]string{
 		       "status": "success",
 		       "message": "Бронь успешно создана!",
 	   })
