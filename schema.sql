@@ -11,17 +11,17 @@ CREATE TABLE rooms (
    status VARCHAR(20) DEFAULT 'free'
 );
 
-CREATE TABLE bookings (
-   id SERIAL PRIMARY KEY,
-   room_id INT REFERENCES rooms(id) ON DELETE CASCADE,
-   user_name VARCHAR(100) NOT NULL,
-   start_time TIMESTAMP NOT NULL,
-   end_time TIMESTAMP NOT NULL,  
-   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE users (
    id SERIAL PRIMARY KEY,
    name VARCHAR(100) NOT NULL,
    role VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE bookings (
+   id SERIAL PRIMARY KEY,
+   room_id INT REFERENCES rooms(id) ON DELETE CASCADE,
+   user_id INT REFERENCES users(id) ON DELETE CASCADE,
+   start_time TIMESTAMP NOT NULL,
+   end_time TIMESTAMP NOT NULL,  
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

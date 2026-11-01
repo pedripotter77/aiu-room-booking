@@ -30,7 +30,7 @@ type Room struct {
 
 type BookingRequest struct {
 	RoomID    int    `json:"room_id"`
-	UserName    string    `json:"user_name"`
+	UserID    int    `json:"user_id"`
 	StartTime string `json:"start_time"`
 	EndTime   string `json:"end_time"`
 }
@@ -141,16 +141,16 @@ func main() {
 		   return
 	   }
 
-	   insertQuery := `INSERT INTO bookings (room_id, user_name, start_time, end_time) VALUES ($1, $2, $3, $4);`
+	   insertQuery := `INSERT INTO bookings (room_id, user_id, start_time, end_time) VALUES ($1, $2, $3, $4);`
 
-	   _, err = db.Exec(insertQuery, req.RoomID, req.UserName, startTime, endTime)
+	   _, err = db.Exec(insertQuery, req.RoomID, req.UserID, startTime, endTime)
 	   if err != nil {
 		   http.Error(w, "Failed to save booking: " + err.Error(), http.StatusInternalServerError)
 		   return
 	   }
 
-	   log.Printf("Новая бронь: RoomID=%d, User=%s, From=%s, To=%s",
-		   req.RoomID, req.UserName, req.StartTime, req.EndTime,
+	   log.Printf("Новая бронь: RoomID=%d, UserID=%d, From=%s, To=%s",
+		   req.RoomID, req.UserID, req.StartTime, req.EndTime,
 	   )
 
 	   w.Header().Set("Content-Type", "application/json")
