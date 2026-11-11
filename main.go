@@ -25,12 +25,15 @@ type Room struct {
 	FloorID int   `json:"floor_id"`
 	RoomNumber string `json:"room_number"`
 	RoomType string `json:"room_type"`
+	Capacity int `json:"capacity"`
+	Equipment string `json:"equipment"`
 	Status string `json:"status"`
 }
 
 type BookingRequest struct {
 	RoomID    int    `json:"room_id"`
 	UserID    int    `json:"user_id"`
+	Discipline string `json:"discipline"`
 	StartTime string `json:"start_time"`
 	EndTime   string `json:"end_time"`
 }
