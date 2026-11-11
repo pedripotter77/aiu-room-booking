@@ -7,6 +7,6 @@
 
 * **Backend:** Go (Golang)
 * **Database:** PostgreSQL
-* **Frontend (In Progress):** HTML5, CSS3, JavaScript (ES6+)
+* **Frontend (In Progress):** React
 * **UI/UX Design:** Figma
 * **Drivers & Libraries:** `github.com/lib/pq`, `github.com/joho/godotenv`
