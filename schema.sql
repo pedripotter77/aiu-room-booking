@@ -8,6 +8,8 @@ CREATE TABLE rooms (
    floor_id INT REFERENCES floors(id) ON DELETE CASCADE,
    room_number VARCHAR(20) NOT NULL,
    room_type VARCHAR(60),
+   capacity INT DEFAULT 30,
+   equipment TEXT,
    status VARCHAR(20) DEFAULT 'free'
 );
 
@@ -21,6 +23,8 @@ CREATE TABLE bookings (
    id SERIAL PRIMARY KEY,
    room_id INT REFERENCES rooms(id) ON DELETE CASCADE,
    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+   discipline VARCHAR(150),
+   status VARCHAR(30) DEFAULT 'pending',
    start_time TIMESTAMP NOT NULL,
    end_time TIMESTAMP NOT NULL,  
    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
