@@ -29,3 +29,13 @@ CREATE TABLE bookings (
    end_time TIMESTAMP NOT NULL,  
    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(150) NOT NULL,             
+    message TEXT NOT NULL,                   
+    type VARCHAR(30) DEFAULT 'approved',     
+    is_read BOOLEAN DEFAULT FALSE,           
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
