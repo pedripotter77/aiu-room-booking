@@ -82,7 +82,7 @@ func main() {
 	http.HandleFunc("/api/rooms", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
-		rows, err := db.Query("SELECT id, floor_id, room_number, room_type, status FROM rooms")
+		rows, err := db.Query("SELECT id, floor_id, room_number, room_type, capacity, equipment, status FROM rooms")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -93,7 +93,7 @@ func main() {
 
 		for rows.Next() {
 			var r Room
-			err := rows.Scan(&r.ID, &r.FloorID, &r.RoomNumber, &r.RoomType, &r.Status)
+			err := rows.Scan(&r.ID, &r.FloorID, &r.RoomNumber, &r.RoomType, &r.Capacity, &r.Equipment, &r.Status)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
@@ -144,16 +144,16 @@ func main() {
 		   return
 	   }
 
-	   insertQuery := `INSERT INTO bookings (room_id, user_id, start_time, end_time) VALUES ($1, $2, $3, $4);`
+	   insertQuery := `INSERT INTO bookings (room_id, user_id, discipline, start_time, end_time) VALUES ($1, $2, $3, $4, $5);`
 
-	   _, err = db.Exec(insertQuery, req.RoomID, req.UserID, startTime, endTime)
+	   _, err = db.Exec(insertQuery, req.RoomID, req.UserID, req.Discipline, startTime, endTime)
 	   if err != nil {
 		   http.Error(w, "Failed to save booking: " + err.Error(), http.StatusInternalServerError)
 		   return
 	   }
 
-	   log.Printf("Новая бронь: RoomID=%d, UserID=%d, From=%s, To=%s",
-		   req.RoomID, req.UserID, req.StartTime, req.EndTime,
+	   log.Printf("Новая бронь: RoomID=%d, UserID=%d, Discipline=%s, From=%s, To=%s",
+		   req.RoomID, req.UserID, req.Discipline, req.StartTime, req.EndTime,
 	   )
 
 	   w.Header().Set("Content-Type", "application/json")
