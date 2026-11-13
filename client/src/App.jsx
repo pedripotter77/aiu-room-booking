@@ -1,10 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import logo from './assets/aiu.png';
 import icon from './assets/profile_icon.png';
 import notificationIcon from './assets/notification.png';
 
 function App() {
+  const [activeModal, setActiveModal] = useState(null);
+
+  const freeRooms = [
+    { number: 'Кабинет 404', type: 'Обычный класс', status: 'Не забронирован' },
+    { number: 'Кабинет 706', type: 'Лекционный класс', status: 'Не забронирован' },
+    { number: 'Кабинет 302', type: 'Компьютерный класс', status: 'Не забронирован' },
+    { number: 'Кабинет 501', type: 'Обычный класс', status: 'Не забронирован' },
+  ];
+
+  const busyRooms = [
+    { number: 'Кабинет 707', type: 'Обычный класс', status: 'Идет пара "Философия"' },
+    { number: 'Кабинет 1104', type: 'Компьютерный класс', status: 'Идет пара "ИКТ"' },
+    { number: 'Кабинет 909', type: 'Компьютерный класс', status: 'Идет пара "Программирование"' },
+    { number: 'Кабинет 1010', type: 'Обычный класс', status: 'Идет пара "Физика"' },
+    { number: 'Кабинет 1110', type: 'Компьютерный класс', status: 'Идет пара "Алгоритмы"' },
+    { number: 'Кабинет 1102', type: 'Лекционный класс', status: 'Идет пара "Лексика"' },
+    { number: 'Кабинет 1106', type: 'Лекционный класс', status: 'Идет пара "Базы данных"' },
+    { number: 'Кабинет 1105', type: 'Обычный класс', status: 'Идет пара "Высшая математика"' },
+    { number: 'Кабинет 506', type: 'Компьютерный класс', status: 'Идет пара "Сети"' },
+  ];
+
+  const bookedRooms = [
+    { number: 'Кабинет 902', type: 'Обычный класс', status: 'Забронирован преподавателем на 10:55' },
+    { number: 'Кабинет 1103', type: 'Компьютерный класс', status: 'Забронирован преподавателем на 17:40' },
+    { number: 'Кабинет 1107', type: 'Обычный класс', status: 'Забронирован преподавателем на 15:30' },
+    { number: 'Кабинет 809', type: 'Обычный класс', status: 'Забронирован преподавателем на 8:00' },
+  ];
+
+  const getCurrentRoomsList = () => {
+    if (activeModal === 'free') return freeRooms;
+    if (activeModal === 'busy') return busyRooms;
+    if (activeModal === 'booked') return bookedRooms;
+    return [];
+  };
+
   return (
     <div className="app-layout">
       <main className="content-area">
@@ -40,9 +75,12 @@ function App() {
       <div className="rooms-container">
           <div className="rooms-grid-columns">
             
-            {/* Колонка 1: Свободные */}
             <div className="status-column">
-              <div className="status-header green">🟢 Свободные (4)</div>
+              <div className="status-dropdown-header" onClick={() => setActiveModal('free')}>
+                <span className="dot green"></span>
+                <span>Свободные (4)</span>
+                <span className="arrow-icon">▼</span>
+              </div>
               <div className="room-card">
                 <h3>Кабинет 404</h3>
                 <p>Обычный класс</p>
@@ -51,9 +89,12 @@ function App() {
               </div>
             </div>
 
-            {/* Колонка 2: Заняты */}
             <div className="status-column">
-              <div className="status-header red">🔴 Заняты (17)</div>
+              <div className="status-dropdown-header" onClick={() => setActiveModal('busy')}>
+                <span className="dot red"></span>
+                <span>Заняты (17)</span>
+                <span className="arrow-icon">▼</span>
+              </div>
               <div className="room-card">
                 <h3>Кабинет 707</h3>
                 <p>Обычный класс</p>
@@ -61,9 +102,12 @@ function App() {
               </div>
             </div>
 
-            {/* Колонка 3: Забронировано */}
             <div className="status-column">
-              <div className="status-header yellow">🟡 Забронировано (7)</div>
+              <div className="status-dropdown-header" onClick={() => setActiveModal('booked')}>
+                <span className="dot yellow"></span>
+                <span>Забронировано (7)</span>
+                <span className="arrow-icon">▼</span>
+              </div>
               <div className="room-card">
                 <h3>Кабинет 902</h3>
                 <p>Обычный класс</p>
@@ -73,6 +117,43 @@ function App() {
 
           </div>
         </div>
+
+        {activeModal && (
+          <div className="modal-overlay" onClick={() => setActiveModal(null)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+
+              <div className="modal-header">
+                <h2>
+                  {activeModal === 'free' && '🟢 ВСЕ СВОБОДНЫЕ (4)'}
+                  {activeModal === 'busy' && '🔴 ВСЕ ЗАНЯТЫ (17)'}
+                  {activeModal === 'booked' && '🟡 ВСЕ ЗАБРОНИРОВАНЫ (7)'}
+                </h2>
+                <button className="close-modal-btn" onClick={() => setActiveModal(null)}>X</button>
+              </div>
+
+              <div className="modal-rooms-list">
+                {getCurrentRoomsList().map((room, index) => (
+                <div className="modal-room-item" key={index}>
+                  <div>
+                    <h4>{room.number}</h4>
+                      <p>{room.type} — <strong>{room.status}</strong></p>
+                  </div>
+                 {activeModal === 'free' && (
+                      <button className="modal-action-btn">Бронь</button>
+                    )}
+                    {activeModal === 'busy' && (
+                      <span className="status-badge red-text">Занято</span>
+                    )}
+                    {activeModal === 'booked' && (
+                      <span className="status-badge yellow-text">Забронировано</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
