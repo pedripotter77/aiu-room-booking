@@ -37,8 +37,41 @@ function App() {
         </header>
        
 
-        <div className="rooms-grid">
-          <p>Здесь будет отображаться информация о загруженности кабинетов.</p>
+      <div className="rooms-container">
+          <div className="rooms-grid-columns">
+            
+            {/* Колонка 1: Свободные */}
+            <div className="status-column">
+              <div className="status-header green">🟢 Свободные (4)</div>
+              <div className="room-card">
+                <h3>Кабинет 404</h3>
+                <p>Обычный класс</p>
+                <span className="room-subtext">Не забронирован</span>
+                <button className="book-btn">ЗАБРОНИРОВАТЬ</button>
+              </div>
+            </div>
+
+            {/* Колонка 2: Заняты */}
+            <div className="status-column">
+              <div className="status-header red">🔴 Заняты (17)</div>
+              <div className="room-card">
+                <h3>Кабинет 707</h3>
+                <p>Обычный класс</p>
+                <span className="room-subtext muted">Идет пара "Философия"</span>
+              </div>
+            </div>
+
+            {/* Колонка 3: Забронировано */}
+            <div className="status-column">
+              <div className="status-header yellow">🟡 Забронировано (7)</div>
+              <div className="room-card">
+                <h3>Кабинет 902</h3>
+                <p>Обычный класс</p>
+                <span className="room-subtext muted">Забронирован преподавателем на 10:55</span>
+              </div>
+            </div>
+
+          </div>
         </div>
       </main>
     </div>
