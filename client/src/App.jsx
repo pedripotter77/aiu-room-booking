@@ -4,9 +4,186 @@ import logo from './assets/aiu.png';
 import icon from './assets/profile_icon.png';
 import notificationIcon from './assets/notification.png';
 
+const INITIAL_ROOMS = [
+  {
+    id: 404,
+    number: 'Кабинет 404',
+    type: 'Обычный класс',
+    category: 'free',
+    statusLabel: 'Свободен',
+    cardSubtext: 'Не забронирован',
+    floor: 4,
+    capacity: 32,
+    schedule: [
+      { slot: '1 пара (08:30 – 09:20)', status: 'busy', note: 'Занято (Высшая математика)' },
+      { slot: '2 пара (09:30 – 10:20)', status: 'busy', note: 'Занято (Информатика)' },
+      { slot: '3 пара (10:30 – 11:20)', status: 'busy', note: 'Занято' },
+      { slot: '4 пара (11:30 – 12:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '5 пара (12:50 – 13:40)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '6 пара (13:50 – 14:40)', status: 'busy', note: 'Занято' },
+    ],
+  },
+  {
+    id: 706,
+    number: 'Кабинет 706',
+    type: 'Лекционный класс',
+    category: 'free',
+    statusLabel: 'Свободен',
+    cardSubtext: 'Не забронирован',
+    floor: 7,
+    capacity: 60,
+    schedule: [
+      { slot: '1 пара (08:30 – 09:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '2 пара (09:30 – 10:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '3 пара (10:30 – 11:20)', status: 'busy', note: 'Занято (Алгоритмы и структуры данных)' },
+      { slot: '4 пара (11:30 – 12:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '5 пара (12:50 – 13:40)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '6 пара (13:50 – 14:40)', status: 'busy', note: 'Занято' },
+    ],
+  },
+  {
+    id: 707,
+    number: 'Кабинет 707',
+    type: 'Обычный класс',
+    category: 'busy',
+    statusLabel: 'Занят',
+    cardSubtext: 'Идет пара "Философия"',
+    floor: 7,
+    capacity: 30,
+    schedule: [
+      { slot: '1 пара (08:30 – 09:20)', status: 'busy', note: 'Занято (Философия)' },
+      { slot: '2 пара (09:30 – 10:20)', status: 'busy', note: 'Занято (Философия)' },
+      { slot: '3 пара (10:30 – 11:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '4 пара (11:30 – 12:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '5 пара (12:50 – 13:40)', status: 'busy', note: 'Занято' },
+      { slot: '6 пара (13:50 – 14:40)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+    ],
+  },
+  {
+    id: 902,
+    number: 'Кабинет 902',
+    type: 'Обычный класс',
+    category: 'booked',
+    statusLabel: 'Забронировано',
+    cardSubtext: 'Забронирован преподавателем на 10:55',
+    floor: 9,
+    capacity: 28,
+    schedule: [
+      { slot: '1 пара (08:30 – 09:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '2 пара (09:30 – 10:20)', status: 'booked', note: 'Забронировано преподавателем' },
+      { slot: '3 пара (10:30 – 11:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '4 пара (11:30 – 12:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      { slot: '5 пара (12:50 – 13:40)', status: 'busy', note: 'Занято' },
+      { slot: '6 пара (13:50 – 14:40)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+    ],
+  },
+];
+
 function App() {
   const [activeModal, setActiveModal] = useState(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+
+  const [bookingRoomId, setBookingRoomId] = useState(null);
+  const [role, setRole] = useState('teacher'); // 'teacher', 'admin' or 'student'
+  const [selectedSlotIndex, setSelectedSlotIndex] = useState(null);
+  const [purpose, setPurpose] = useState('Открытая лекция / Высшая математика');
+  const [assigneeOrGroup, setAssigneeOrGroup] = useState('ИС 24-А');
+  const [toast, setToast] = useState(null);
+
+  const [rooms, setRooms] = useState([
+    {
+      id: 404,
+      number: 'Кабинет 404',
+      type: 'Обычный класс',
+      category: 'free',
+      statusLabel: 'Свободен',
+      status: 'Не забронирован',
+      floor: 4,
+      capacity: 32,
+      schedule: [
+        { slot: '1 пара (08:30 – 09:20)', status: 'busy', note: 'Занято (Высшая математика)' },
+        { slot: '2 пара (09:30 – 10:20)', status: 'busy', note: 'Занято (Информатика)' },
+        { slot: '3 пара (10:30 – 11:20)', status: 'busy', note: 'Занято' },
+        { slot: '4 пара (11:30 – 12:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '5 пара (12:50 – 13:40)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '6 пара (13:50 – 14:40)', status: 'busy', note: 'Занято' },
+      ],
+    },
+    {
+      id: 706,
+      number: 'Кабинет 706',
+      type: 'Лекционный класс',
+      category: 'free',
+      statusLabel: 'Свободен',
+      status: 'Не забронирован',
+      floor: 7,
+      capacity: 60,
+      schedule: [
+        { slot: '1 пара (08:30 – 09:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '2 пара (09:30 – 10:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '3 пара (10:30 – 11:20)', status: 'busy', note: 'Занято (Алгоритмы)' },
+        { slot: '4 пара (11:30 – 12:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '5 пара (12:50 – 13:40)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '6 пара (13:50 – 14:40)', status: 'busy', note: 'Занято' },
+      ],
+    },
+    {
+      id: 302,
+      number: 'Кабинет 302',
+      type: 'Компьютерный класс',
+      category: 'free',
+      statusLabel: 'Свободен',
+      status: 'Не забронирован',
+      floor: 3,
+      capacity: 25,
+      schedule: [
+        { slot: '1 пара (08:30 – 09:20)', status: 'busy', note: 'Занято (Программирование)' },
+        { slot: '2 пара (09:30 – 10:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '3 пара (10:30 – 11:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '4 пара (11:30 – 12:20)', status: 'busy', note: 'Занято (Сети)' },
+        { slot: '5 пара (12:50 – 13:40)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '6 пара (13:50 – 14:40)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+      ],
+    },
+    {
+      id: 501,
+      number: 'Кабинет 501',
+      type: 'Обычный класс',
+      category: 'free',
+      statusLabel: 'Свободен',
+      status: 'Не забронирован',
+      floor: 5,
+      capacity: 30,
+      schedule: [
+        { slot: '1 пара (08:30 – 09:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '2 пара (09:30 – 10:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '3 пара (10:30 – 11:20)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '4 пара (11:30 – 12:20)', status: 'busy', note: 'Занято' },
+        { slot: '5 пара (12:50 – 13:40)', status: 'free', note: 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)' },
+        { slot: '6 пара (13:50 – 14:40)', status: 'busy', note: 'Занято' },
+      ],
+    },
+    { id: 707, number: 'Кабинет 707', type: 'Обычный класс', category: 'busy', statusLabel: 'Занят', status: 'Идет пара "Философия"', floor: 7, capacity: 30, schedule: [] },
+    { id: 1104, number: 'Кабинет 1104', type: 'Компьютерный класс', category: 'busy', statusLabel: 'Занят', status: 'Идет пара "ИКТ"', floor: 11, capacity: 25, schedule: [] },
+    { id: 909, number: 'Кабинет 909', type: 'Компьютерный класс', category: 'busy', statusLabel: 'Занят', status: 'Идет пара "Программирование"', floor: 9, capacity: 25, schedule: [] },
+    { id: 1010, number: 'Кабинет 1010', type: 'Обычный класс', category: 'busy', statusLabel: 'Занят', status: 'Идет пара "Физика"', floor: 10, capacity: 30, schedule: [] },
+    { id: 1110, number: 'Кабинет 1110', type: 'Компьютерный класс', category: 'busy', statusLabel: 'Занят', status: 'Идет пара "Алгоритмы"', floor: 11, capacity: 25, schedule: [] },
+    { id: 1102, number: 'Кабинет 1102', type: 'Лекционный класс', category: 'busy', statusLabel: 'Занят', status: 'Идет пара "Лексика"', floor: 11, capacity: 50, schedule: [] },
+    { id: 1106, number: 'Кабинет 1106', type: 'Лекционный класс', category: 'busy', statusLabel: 'Занят', status: 'Идет пара "Базы данных"', floor: 11, capacity: 50, schedule: [] },
+    { id: 1105, number: 'Кабинет 1105', type: 'Обычный класс', category: 'busy', statusLabel: 'Занят', status: 'Идет пара "Высшая математика"', floor: 11, capacity: 30, schedule: [] },
+    { id: 506, number: 'Кабинет 506', type: 'Компьютерный класс', category: 'busy', statusLabel: 'Занят', status: 'Идет пара "Сети"', floor: 5, capacity: 25, schedule: [] },
+    { id: 902, number: 'Кабинет 902', type: 'Обычный класс', category: 'booked', statusLabel: 'Забронировано', status: 'Забронирован преподавателем на 10:55', floor: 9, capacity: 28, schedule: [] },
+    { id: 1103, number: 'Кабинет 1103', type: 'Компьютерный класс', category: 'booked', statusLabel: 'Забронировано', status: 'Забронирован преподавателем на 17:40', floor: 11, capacity: 25, schedule: [] },
+    { id: 1107, number: 'Кабинет 1107', type: 'Обычный класс', category: 'booked', statusLabel: 'Забронировано', status: 'Забронирован преподавателем на 15:30', floor: 11, capacity: 30, schedule: [] },
+    { id: 809, number: 'Кабинет 809', type: 'Обычный класс', category: 'booked', statusLabel: 'Забронировано', status: 'Забронирован преподавателем на 8:00', floor: 8, capacity: 30, schedule: [] },
+  ]);
+
+  const freeRooms = rooms.filter((room) => room.category === 'free');
+  const busyRooms = rooms.filter((room) => room.category === 'busy');
+  const bookedRooms = rooms.filter((room) => room.category === 'booked');
+
+  const selectableRooms = freeRooms.filter((room) => Array.isArray(room.schedule) && room.schedule.length > 0);
+  const selectedRoom = rooms.find((room) => room.id === bookingRoomId) || null;
 
   const toggleMenu = (event) => {
     if (activeModal === 'menu') {
@@ -26,38 +203,101 @@ function App() {
     if (!activeModal) return undefined;
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setActiveModal(null);
+      if (event.key === 'Escape') setActiveModal(null); {
+        setActiveModal(null);
+        setBookingRoomId(null);
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [activeModal]);
+  }, [activeModal, bookingRoomId]);
 
-  const freeRooms = [
-    { number: 'Кабинет 404', type: 'Обычный класс', status: 'Не забронирован' },
-    { number: 'Кабинет 706', type: 'Лекционный класс', status: 'Не забронирован' },
-    { number: 'Кабинет 302', type: 'Компьютерный класс', status: 'Не забронирован' },
-    { number: 'Кабинет 501', type: 'Обычный класс', status: 'Не забронирован' },
-  ];
+  useEffect(() => {
+    if (role == 'teacher') {
+      setPurpose('Открытая лекция / Высшая математика');
+      setAssigneeOrGroup('ИС 24-А');
+    } else if (role == 'admin') {
+      setPurpose('Открытая лекция / Спецкурс');
+      setAssigneeOrGroup('Кафедра ИТ - Проф. Ибрагимов');
+    }
+  }, [role]);
+  
+  useEffect (() => {
+    if (!selectedRoom || !Array.isArray(selectedRoom.schedule)) {
+      setSelectedSlotIndex(null);
+      return;
+    }
+    const firstFreeIdx = selectedRoom.schedule.findIndex((item) => item.status === 'free');
+    setSelectedSlotIndex(firstFreeIdx !== -1 ? firstFreeIdx : null);
+  }, [bookingRoomId, selectedRoom]);
 
-  const busyRooms = [
-    { number: 'Кабинет 707', type: 'Обычный класс', status: 'Идет пара "Философия"' },
-    { number: 'Кабинет 1104', type: 'Компьютерный класс', status: 'Идет пара "ИКТ"' },
-    { number: 'Кабинет 909', type: 'Компьютерный класс', status: 'Идет пара "Программирование"' },
-    { number: 'Кабинет 1010', type: 'Обычный класс', status: 'Идет пара "Физика"' },
-    { number: 'Кабинет 1110', type: 'Компьютерный класс', status: 'Идет пара "Алгоритмы"' },
-    { number: 'Кабинет 1102', type: 'Лекционный класс', status: 'Идет пара "Лексика"' },
-    { number: 'Кабинет 1106', type: 'Лекционный класс', status: 'Идет пара "Базы данных"' },
-    { number: 'Кабинет 1105', type: 'Обычный класс', status: 'Идет пара "Высшая математика"' },
-    { number: 'Кабинет 506', type: 'Компьютерный класс', status: 'Идет пара "Сети"' },
-  ];
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => {
+      setToast((prev) => (prev === message ? null : prev));
+    }, 3200);
+  };
 
-  const bookedRooms = [
-    { number: 'Кабинет 902', type: 'Обычный класс', status: 'Забронирован преподавателем на 10:55' },
-    { number: 'Кабинет 1103', type: 'Компьютерный класс', status: 'Забронирован преподавателем на 17:40' },
-    { number: 'Кабинет 1107', type: 'Обычный класс', status: 'Забронирован преподавателем на 15:30' },
-    { number: 'Кабинет 809', type: 'Обычный класс', status: 'Забронирован преподавателем на 8:00' },
-  ];
+  const openBookingModal = (roomId) => {
+    const target = rooms.find((r) => r.id === roomId);
+    const fallbackId =
+      target && Array.isArray(target.schedule) && target.schedule.length > 0
+        ? target.id
+        : selectableRooms[0]?.id ?? null;
+
+    setActiveModal(null);
+    setBookingRoomId(fallbackId);
+  };
+
+  const handleSubmitBooking = (event) => {
+    event.preventDefault();
+    if (!selectedRoom || selectedSlotIndex === null) {
+      showToast('Выберите свободную пару');
+      return;
+    }
+
+    const chosenSlot = selectedRoom.schedule[selectedSlotIndex];
+    if (!chosenSlot || chosenSlot.status !== 'free') {
+      showToast('Выбранная пара недоступна');
+      return;
+    }
+
+    const isTeacher = role === 'teacher';
+    const nextStatus = isTeacher ? 'pending' : 'booked';
+    const nextNote = isTeacher
+      ? `Заявка отправлена (${assigneeOrGroup || 'Преподаватель'})`
+      : `Забронировано (${assigneeOrGroup || 'Админ'})`;
+
+    setRooms((prevRooms) =>
+      prevRooms.map((room) => {
+        if (room.id !== selectedRoom.id) return room;
+
+        const updatedSchedule = room.schedule.map((item, idx) =>
+          idx === selectedSlotIndex
+            ? { ...item, status: nextStatus, note: nextNote }
+            : item
+        );
+
+        const nextFreeIdx = updatedSchedule.findIndex((item) => item.status === 'free');
+        setSelectedSlotIndex(nextFreeIdx !== -1 ? nextFreeIdx : null);
+
+        return {
+          ...room,
+          schedule: updatedSchedule,
+          status: isTeacher
+            ? `Заявка на ${chosenSlot.slot}`
+            : `Забронировано на ${chosenSlot.slot}`,
+        };
+      })
+    );
+
+    showToast(
+      isTeacher
+        ? `Заявка на ${selectedRoom.number} (${chosenSlot.slot}) отправлена администратору`
+        : `${selectedRoom.number} забронирован на ${chosenSlot.slot}`
+    );
+  };
 
   const getCurrentRoomsList = () => {
     if (activeModal === 'free') return freeRooms;
@@ -68,6 +308,8 @@ function App() {
 
   return (
     <div className="app-layout">
+      {toast && <div className="toast-banner">{toast}</div>}
+
       <main className="content-area">
         <header className="top-header">
           <div className="logo-search-container">
@@ -154,43 +396,54 @@ function App() {
             <div className="status-column">
               <div className="status-dropdown-header" onClick={() => setActiveModal('free')}>
                 <span className="dot green"></span>
-                <span>Свободные (4)</span>
+                <span>Свободные ({freeRooms.length})</span>
                 <span className="arrow-icon">▼</span>
-              </div>
-              <div className="room-card">
-                <h3>Кабинет 404</h3>
-                <p>Обычный класс</p>
-                <span className="room-subtext">Не забронирован</span>
-                <button className="book-btn">ЗАБРОНИРОВАТЬ</button>
-              </div>
+             </div>
+              {freeRooms[0] && (
+                <div className="room-card">
+                  <h3>{freeRooms[0].number}</h3>
+                  <p>{freeRooms[0].type}</p>
+                  <span className="room-subtext">{freeRooms[0].status}</span>
+                  <button
+                    className="book-btn"
+                    type="button"
+                    onClick={() => openBookingModal(freeRooms[0].id)}
+                  >
+                    ЗАБРОНИРОВАТЬ
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="status-column">
               <div className="status-dropdown-header" onClick={() => setActiveModal('busy')}>
                 <span className="dot red"></span>
-                <span>Заняты (17)</span>
+                <span>Заняты ({busyRooms.length})</span>
                 <span className="arrow-icon">▼</span>
               </div>
-              <div className="room-card">
-                <h3>Кабинет 707</h3>
-                <p>Обычный класс</p>
-                <span className="room-subtext muted">Идет пара "Философия"</span>
-              </div>
+              {busyRooms[0] && (
+                <div className="room-card">
+                  <h3>{busyRooms[0].number}</h3>
+                  <p>{busyRooms[0].type}</p>
+                  <span className="room-subtext muted">{busyRooms[0].status}</span>
+                </div>
+              )}
             </div>
 
             <div className="status-column">
               <div className="status-dropdown-header" onClick={() => setActiveModal('booked')}>
                 <span className="dot yellow"></span>
-                <span>Забронировано (7)</span>
+                <span>Забронировано ({bookedRooms.length})</span>
                 <span className="arrow-icon">▼</span>
               </div>
-              <div className="room-card">
-                <h3>Кабинет 902</h3>
-                <p>Обычный класс</p>
-                <span className="room-subtext muted">Забронирован преподавателем на 10:55</span>
-              </div>
+              {bookedRooms[0] && (
+                <div className="room-card">
+                  <h3>{bookedRooms[0].number}</h3>
+                  <p>{bookedRooms[0].type}</p>
+                  <span className="room-subtext muted">{bookedRooms[0].status}</span>
+                </div>
+              )}
             </div>
-
           </div>
         </div>
 
@@ -199,22 +452,28 @@ function App() {
             <div className="modal-content" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
               <div className="modal-header">
                 <h2>
-                  {activeModal === 'free' && '🟢 ВСЕ СВОБОДНЫЕ (4)'}
-                  {activeModal === 'busy' && '🔴 ВСЕ ЗАНЯТЫ (17)'}
-                  {activeModal === 'booked' && '🟡 ВСЕ ЗАБРОНИРОВАНЫ (7)'}
+                  {activeModal === 'free' && `🟢 ВСЕ СВОБОДНЫЕ (${freeRooms.length})`}
+                  {activeModal === 'busy' && `🔴 ВСЕ ЗАНЯТЫ (${busyRooms.length})`}
+                  {activeModal === 'booked' && `🟡 ВСЕ ЗАБРОНИРОВАНЫ (${bookedRooms.length})`}
                 </h2>
                 <button className="close-modal-btn" type="button" aria-label="Закрыть" onClick={() => setActiveModal(null)}>×</button>
               </div>
 
               <div className="modal-rooms-list">
-                {getCurrentRoomsList().map((room, index) => (
-                  <div className="modal-room-item" key={index}>
+                {getCurrentRoomsList().map((room) => (
+                  <div className="modal-room-item" key={room.id}>
                     <div>
                       <h4>{room.number}</h4>
                       <p>{room.type} — <strong>{room.status}</strong></p>
                     </div>
                     {activeModal === 'free' && (
-                      <button className="modal-action-btn" type="button">Бронь</button>
+                      <button
+                        className="modal-action-btn"
+                        type="button"
+                        onClick={() => openBookingModal(room.id)}
+                      >
+                        Бронь
+                      </button>
                     )}
                     {activeModal === 'busy' && (
                       <span className="status-badge red-text">Занято</span>
@@ -228,9 +487,219 @@ function App() {
             </div>
           </div>
         )}
+
+        {/* Модалка «Бронирование аудитории» */}
+        {selectedRoom && (
+          <div className="modal-overlay" onClick={() => setBookingRoomId(null)}>
+            <form
+              className="modal-content booking-modal-card"
+              role="dialog"
+              aria-modal="true"
+              onClick={(event) => event.stopPropagation()}
+              onSubmit={handleSubmitBooking}
+            >
+              <div className="booking-modal-top">
+                <div>
+                  <h2>Бронирование аудитории</h2>
+                  <p className="booking-meta">
+                    <span className="dot green"></span> {selectedRoom.statusLabel} • {selectedRoom.floor} этаж (вместимость {selectedRoom.capacity} чел.)
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="close-modal-btn"
+                  aria-label="Закрыть"
+                  onClick={() => setBookingRoomId(null)}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="room-tabs-row">
+                {selectableRooms.map((room) => (
+                  <button
+                    key={room.id}
+                    type="button"
+                    className={`room-tab-btn ${room.id === selectedRoom.id ? 'active' : ''}`}
+                    onClick={() => setBookingRoomId(room.id)}
+                  >
+                    {room.number} ({room.type})
+                  </button>
+                ))}
+              </div>
+
+              <div className="role-switcher-row">
+                <span className="role-label">Роль в системе:</span>
+                <div className="role-segmented">
+                  <button
+                    type="button"
+                    className={role === 'student' ? 'active' : ''}
+                    onClick={() => setRole('student')}
+                  >
+                    Студент
+                  </button>
+                  <button
+                    type="button"
+                    className={role === 'teacher' ? 'active' : ''}
+                    onClick={() => setRole('teacher')}
+                  >
+                    Преподаватель
+                  </button>
+                  <button
+                    type="button"
+                    className={role === 'admin' ? 'active' : ''}
+                    onClick={() => setRole('admin')}
+                  >
+                    Админ
+                  </button>
+                </div>
+              </div>
+
+              {role === 'student' && (
+                <div className="student-notice-box">
+                  <strong>ⓘ Режим просмотра (Студент)</strong>
+                  <p>
+                    Студентам доступен только просмотр расписания. Прямое бронирование закрыто.
+                    Если вам нужна аудитория для кружка или проекта, обратитесь к преподавателю или куратору.
+                  </p>
+                </div>
+              )}
+
+              {role === 'teacher' && (
+                <div className="role-info-banner">
+                  <p>Режим преподавателя: Подача заявки на бронирование к администратору</p>
+                  <strong>Режим преподавателя</strong>
+                </div>
+              )}
+
+              {role === 'admin' && (
+                <div className="role-info-banner">
+                  <p>
+                    Режим администратора: Прямое мгновенное закрепление кабинета и управление расписанием без согласования с диспетчерской.
+                  </p>
+                  <strong>Режим администратора</strong>
+                </div>
+              )}
+
+              <div className="schedule-section">
+                <div className="schedule-header-row">
+                  <strong>
+                    {role === 'student'
+                      ? 'Расписание на сегодня:'
+                      : 'Расписание на сегодня (выберите доступную пару):'}
+                  </strong>
+                  <span>Корпус 7 • Жиембет Жырау 2</span>
+                </div>
+
+                <div className="schedule-list">
+                  {selectedRoom.schedule.map((item, idx) => {
+                    const isFree = item.status === 'free';
+                    const canSelectSlot = isFree && (role === 'teacher' || role === 'admin');
+                    const isChecked = canSelectSlot && selectedSlotIndex === idx;
+
+                    return (
+                      <div
+                        key={item.slot}
+                        className={`schedule-row ${isFree ? 'is-free' : ''} ${
+                          canSelectSlot ? 'clickable-slot' : ''
+                        }`}
+                        onClick={() => {
+                          if (canSelectSlot) setSelectedSlotIndex(idx);
+                        }}
+                      >
+                        <div className="slot-left">
+                          {canSelectSlot && (
+                            <input
+                              type="radio"
+                              name={`slot-${selectedRoom.id}`}
+                              checked={isChecked}
+                              onChange={() => setSelectedSlotIndex(idx)}
+                              className="slot-radio"
+                            />
+                          )}
+                          <span className={`slot-time ${isFree ? 'bold' : ''}`}>{item.slot}</span>
+                        </div>
+
+                        <span
+                          className={`slot-badge ${
+                            item.status === 'busy'
+                              ? 'badge-busy'
+                              : item.status === 'booked' || item.status === 'pending'
+                              ? 'badge-booked'
+                              : 'badge-free-view'
+                          }`}
+                        >
+                          {item.note}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {(role === 'teacher' || role === 'admin') && (
+                <div className="booking-form-grid">
+                  <div className="form-field">
+                    <label htmlFor="purpose-input">
+                      {role === 'teacher' ? 'Цель / Предмет' : 'Цель / Мероприятие'}
+                    </label>
+                    <input
+                      id="purpose-input"
+                      type="text"
+                      value={purpose}
+                      onChange={(e) => setPurpose(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="form-field">
+                    <label htmlFor="assignee-input">
+                      {role === 'teacher'
+                        ? 'Академическая группа'
+                        : 'Ответственный / Преподаватель или Кафедра'}
+                    </label>
+                    <input
+                      id="assignee-input"
+                      type="text"
+                      value={assigneeOrGroup}
+                      onChange={(e) => setAssigneeOrGroup(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="booking-modal-footer">
+                <span className="footer-caption">Система расписания AIU</span>
+
+                {role === 'student' ? (
+                  <button
+                    type="button"
+                    className="secondary-close-btn"
+                    onClick={() => setBookingRoomId(null)}
+                  >
+                    Понятно / Закрыть
+                  </button>
+                ) : (
+                  <div className="footer-actions-group">
+                    <button
+                      type="button"
+                      className="secondary-close-btn"
+                      onClick={() => setBookingRoomId(null)}
+                    >
+                      Отмена
+                    </button>
+                    <button type="submit" className="primary-submit-btn">
+                      {role === 'teacher'
+                        ? 'Подать заявку на бронирование'
+                        : 'Мгновенно забронировать кабинет'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            </form>
+          </div>
+        )}
       </main>
     </div>
   );
 }
-
 export default App;

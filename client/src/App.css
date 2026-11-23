@@ -448,3 +448,325 @@ body, html {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.booking-modal-card {
+  width: min(740px, 95vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 14px;
+  padding: 24px;
+  gap: 16px;
+}
+
+.booking-modal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.booking-modal-top h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #111827;
+}
+
+.booking-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 0;
+  color: #15803d;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.room-tabs-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.room-tab-btn {
+  padding: 9px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.room-tab-btn.active {
+  border-color: #2563eb;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.role-switcher-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.role-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.role-segmented {
+  display: inline-flex;
+  background: #f3f4f6;
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.role-segmented button {
+  border: none;
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+}
+
+.role-segmented button.active {
+  background: #1e293b;
+  color: #ffffff;
+}
+
+.role-info-banner {
+  padding: 14px 16px;
+  border-radius: 8px;
+  background: #f0f7ff;
+  color: #0f172a;
+}
+
+.role-info-banner p {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #1e293b;
+}
+
+.role-info-banner strong {
+  font-size: 13px;
+  color: #0f294a;
+}
+
+.student-notice-box {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #fffbeb;
+  border-left: 4px solid #f59e0b;
+  color: #78350f;
+  font-size: 13px;
+}
+
+.student-notice-box p {
+  margin: 4px 0 0;
+  line-height: 1.45;
+}
+
+.schedule-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.schedule-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.schedule-header-row span {
+  color: #6b7280;
+}
+
+.schedule-list {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.schedule-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  background: #ffffff;
+}
+
+.schedule-row:last-child {
+  border-bottom: none;
+}
+
+.schedule-row.is-free {
+  background: #f2fbf5;
+}
+
+.schedule-row.clickable-slot {
+  cursor: pointer;
+}
+
+.slot-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slot-radio {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #1d4ed8;
+  cursor: pointer;
+}
+
+.slot-time {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.slot-time.bold {
+  font-weight: 700;
+  color: #111827;
+}
+
+.slot-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.badge-busy {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.badge-booked {
+  background: #fefce8;
+  color: #ca8a04;
+}
+
+.badge-free-view {
+  background: #ffffff;
+  border: 1px solid #86efac;
+  color: #15803d;
+}
+
+.booking-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .booking-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.form-field input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  background: #ffffff;
+}
+
+.form-field input:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.booking-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.footer-caption {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.footer-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.secondary-close-btn {
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #111827;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.primary-submit-btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #0d47ff;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.primary-submit-btn:hover {
+  background: #0838d6;
+}
+
+.toast-banner {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+  background: #111827;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
