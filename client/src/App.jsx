@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import logo from './assets/aiu.png';
 import icon from './assets/profile_icon.png';
@@ -6,6 +6,32 @@ import notificationIcon from './assets/notification.png';
 
 function App() {
   const [activeModal, setActiveModal] = useState(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+
+  const toggleMenu = (event) => {
+    if (activeModal === 'menu') {
+      setActiveModal(null);
+      return;
+    }
+
+    const buttonBounds = event.currentTarget.getBoundingClientRect();
+    setMenuPosition({
+      top: buttonBounds.bottom + 8,
+      left: Math.max(16, Math.min(buttonBounds.left, window.innerWidth - 436)),
+    });
+    setActiveModal('menu');
+  };
+
+  useEffect(() => {
+    if (!activeModal) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setActiveModal(null);
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [activeModal]);
 
   const freeRooms = [
     { number: 'Кабинет 404', type: 'Обычный класс', status: 'Не забронирован' },
@@ -46,9 +72,59 @@ function App() {
         <header className="top-header">
           <div className="logo-search-container">
             <img src={logo} alt="AIU Logo" className="aiu-logo-img"/>
-            <button className="burger-menu-btn" aria-label="Menu">
-              <span></span><span></span><span></span>
-            </button>
+            <div className={`menu-trigger ${activeModal === 'menu' ? 'menu-open' : ''}`}>
+              <button
+                className="burger-menu-btn"
+                type="button"
+                aria-label="Открыть меню"
+                aria-haspopup="dialog"
+                aria-expanded={activeModal === 'menu'}
+                aria-controls="navigation-menu"
+                onClick={toggleMenu}
+              >
+                <span></span><span></span><span></span>
+              </button>
+              {activeModal === 'menu' && (
+                <>
+                  <div className="navigation-backdrop" onClick={() => setActiveModal(null)} />
+                  <div
+                    className="navigation-modal"
+                    id="navigation-menu"
+                    style={{ top: menuPosition.top, left: menuPosition.left }}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="navigation-title"
+                  >
+                    <div className="navigation-modal-header">
+                      <h2 id="navigation-title">Навигация</h2>
+                      <span className="building-badge">Корпус 7</span>
+                    </div>
+                    <nav className="navigation-menu" aria-label="Основная навигация">
+                      <a className="navigation-menu-item active" href="#rooms" onClick={() => setActiveModal(null)}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M3 21V4h18v17M1 21h22M7 8h2m6 0h2M7 12h2m6 0h2M7 16h2m6 0h2M11 21v-3h2v3" />
+                        </svg>
+                        <span>Все этажи и кабинеты</span>
+                      </a>
+                      <div className="navigation-menu-item">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M6 3h9l5 5v13H6zM14 3v6h6M9 13h8m-8 4h8" />
+                        </svg>
+                        <span>Правила и регламент бронирования</span>
+                      </div>
+                      <div className="navigation-menu-item">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                          <rect x="3" y="5" width="18" height="14" rx="2" />
+                          <circle cx="9" cy="11" r="2" />
+                          <path d="M5.5 17c.7-2 2-3 3.5-3s2.8 1 3.5 3m4-7h2m-2 4h2" />
+                        </svg>
+                        <span>Контакты диспетчерской / Деканат</span>
+                      </div>
+                    </nav>
+                  </div>
+                </>
+              )}
+            </div>
             <input type="text" placeholder="Поиск кабинета..." className="search-input" />
           </div>
 
@@ -72,7 +148,7 @@ function App() {
         </header>
        
 
-      <div className="rooms-container">
+      <div className="rooms-container" id="rooms">
           <div className="rooms-grid-columns">
             
             <div className="status-column">
@@ -118,28 +194,27 @@ function App() {
           </div>
         </div>
 
-        {activeModal && (
+        {activeModal && activeModal !== 'menu' && (
           <div className="modal-overlay" onClick={() => setActiveModal(null)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-
+            <div className="modal-content" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
               <div className="modal-header">
                 <h2>
                   {activeModal === 'free' && '🟢 ВСЕ СВОБОДНЫЕ (4)'}
                   {activeModal === 'busy' && '🔴 ВСЕ ЗАНЯТЫ (17)'}
                   {activeModal === 'booked' && '🟡 ВСЕ ЗАБРОНИРОВАНЫ (7)'}
                 </h2>
-                <button className="close-modal-btn" onClick={() => setActiveModal(null)}>X</button>
+                <button className="close-modal-btn" type="button" aria-label="Закрыть" onClick={() => setActiveModal(null)}>×</button>
               </div>
 
               <div className="modal-rooms-list">
                 {getCurrentRoomsList().map((room, index) => (
-                <div className="modal-room-item" key={index}>
-                  <div>
-                    <h4>{room.number}</h4>
+                  <div className="modal-room-item" key={index}>
+                    <div>
+                      <h4>{room.number}</h4>
                       <p>{room.type} — <strong>{room.status}</strong></p>
-                  </div>
-                 {activeModal === 'free' && (
-                      <button className="modal-action-btn">Бронь</button>
+                    </div>
+                    {activeModal === 'free' && (
+                      <button className="modal-action-btn" type="button">Бронь</button>
                     )}
                     {activeModal === 'busy' && (
                       <span className="status-badge red-text">Занято</span>
@@ -150,7 +225,6 @@ function App() {
                   </div>
                 ))}
               </div>
-
             </div>
           </div>
         )}
