@@ -81,6 +81,7 @@ const INITIAL_ROOMS = [
 
 function App() {
   const [activeModal, setActiveModal] = useState(null);
+  const [activePage, setActivePage] = useState('rooms');
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
 
   const [bookingRoomId, setBookingRoomId] = useState(null);
@@ -354,26 +355,47 @@ function App() {
                       <span className="building-badge">Корпус 7</span>
                     </div>
                     <nav className="navigation-menu" aria-label="Основная навигация">
-                      <a className="navigation-menu-item active" href="#rooms" onClick={() => setActiveModal(null)}>
+                      <button
+                        className={`navigation-menu-item ${activePage === 'rooms' ? 'active' : ''}`}
+                        type="button"
+                        onClick={() => {
+                          setActivePage('rooms');
+                          setActiveModal(null);
+                        }}
+                      >
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                           <path d="M3 21V4h18v17M1 21h22M7 8h2m6 0h2M7 12h2m6 0h2M7 16h2m6 0h2M11 21v-3h2v3" />
                         </svg>
                         <span>Все этажи и кабинеты</span>
-                      </a>
-                      <div className="navigation-menu-item">
+                      </button>
+                      <button
+                        className={`navigation-menu-item ${activePage === 'rules' ? 'active' : ''}`}
+                        type="button"
+                        onClick={() => {
+                          setActivePage('rules');
+                          setActiveModal(null);
+                        }}
+                      >
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                           <path d="M6 3h9l5 5v13H6zM14 3v6h6M9 13h8m-8 4h8" />
                         </svg>
                         <span>Правила и регламент бронирования</span>
-                      </div>
-                      <div className="navigation-menu-item">
+                      </button>
+                      <button
+                        className={`navigation-menu-item ${activePage === 'contacts' ? 'active' : ''}`}
+                        type="button"
+                        onClick={() => {
+                          setActivePage('contacts');
+                          setActiveModal(null);
+                        }}
+                      >
                         <svg viewBox="0 0 24 24" aria-hidden="true">
                           <rect x="3" y="5" width="18" height="14" rx="2" />
                           <circle cx="9" cy="11" r="2" />
                           <path d="M5.5 17c.7-2 2-3 3.5-3s2.8 1 3.5 3m4-7h2m-2 4h2" />
                         </svg>
                         <span>Контакты диспетчерской / Деканат</span>
-                      </div>
+                      </button>
                     </nav>
                   </div>
                 </>
@@ -402,7 +424,8 @@ function App() {
         </header>
        
 
-      <div className="rooms-container" id="rooms">
+        {activePage === 'rooms' && (
+          <div className="rooms-container" id="rooms">
           <div className="rooms-grid-columns">
             
             <div className="status-column">
@@ -473,6 +496,82 @@ function App() {
             </div>
           </div>
         </div>
+        )}
+
+        {activePage === 'rules' && (
+          <section className="info-page" aria-labelledby="rules-title">
+            <div className="info-page-header">
+              <span className="info-page-kicker">Корпус 7</span>
+              <h1 id="rules-title">Правила бронирования кабинетов</h1>
+              <p>Базовые правила для работы с аудиториями Astana International University.</p>
+            </div>
+
+            <div className="rules-grid">
+              <article className="info-card">
+                <h2>1. Бронируйте только свободное время</h2>
+                <p>Кабинет можно бронировать только на свободный учебный слот. Занятые и уже забронированные аудитории недоступны.</p>
+              </article>
+              <article className="info-card">
+                <h2>2. Указывайте реальную цель</h2>
+                <p>В заявке укажите название мероприятия, учебной дисциплины или работы и ответственного преподавателя или студенческую группу.</p>
+              </article>
+              <article className="info-card">
+                <h2>3. Соблюдайте время бронирования</h2>
+                <p>Пользование кабинетом начинается и заканчивается в указанное время. Не задерживайте следующую занятую группу.</p>
+              </article>
+              <article className="info-card">
+                <h2>4. Берегите имущество аудитории</h2>
+                <p>Не повреждайте мебель и технику, не перемещайте оборудование без разрешения и оставляйте кабинет в чистом состоянии.</p>
+              </article>
+              <article className="info-card">
+                <h2>5. Соблюдайте академические правила</h2>
+                <p>Кабинет используется по назначению: для занятий, консультаций, встреч и учебных мероприятий. Запрещено мешать другим группам и нарушать режим университета.</p>
+              </article>
+              <article className="info-card">
+                <h2>6. Сообщайте об изменениях</h2>
+                <p>Если мероприятие отменено или перенесено, своевременно сообщите диспетчерской или отмените бронирование, чтобы освободить аудиторию для других пользователей.</p>
+              </article>
+            </div>
+
+            <button className="back-to-rooms-btn" type="button" onClick={() => setActivePage('rooms')}>
+              Вернуться к кабинетам
+            </button>
+          </section>
+        )}
+
+        {activePage === 'contacts' && (
+          <section className="info-page" aria-labelledby="contacts-title">
+            <div className="info-page-header">
+              <span className="info-page-kicker">Контакты</span>
+              <h1 id="contacts-title">Диспетчерская и деканат</h1>
+              <p>Нужен номер диспетчерской или хотите связаться с деканатом? Мы собрали основные контакты здесь.</p>
+            </div>
+
+            <div className="contact-grid">
+              <article className="contact-card">
+                <div className="contact-icon" aria-hidden="true">☎</div>
+                <div>
+                  <h2>Диспетчерская</h2>
+                  <p className="dispatcher-phone">+7 (7172) 47-66-77</p>
+                  <p>Позвоните диспетчерской для уточнения бронирования или состояния кабинета.</p>
+                </div>
+              </article>
+
+              <article className="contact-card">
+                <div className="contact-icon" aria-hidden="true">✉</div>
+                <div>
+                  <h2>Деканат</h2>
+                  <a className="contact-link" href="https://aiu.kz/" target="_blank" rel="noreferrer">Связаться с деканатом на aiu.kz</a>
+                  <p>У AIU есть 6 высших школ. Для связи выберите нужную высшую школу и деканат на официальном сайте университета.</p>
+                </div>
+              </article>
+            </div>
+
+            <button className="back-to-rooms-btn" type="button" onClick={() => setActivePage('rooms')}>
+              Вернуться к кабинетам
+            </button>
+          </section>
+        )}
 
         {['free', 'busy', 'booked'].includes(activeModal) && (
           <div className="status-panel-overlay" onClick={() => setActiveModal(null)}>

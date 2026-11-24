@@ -331,15 +331,21 @@ body, html {
 
 .navigation-menu-item {
   display: flex;
+  width: 100%;
   min-height: 52px;
   align-items: center;
   gap: 14px;
   padding: 10px 12px;
+  border: 0;
+  background: transparent;
   border-radius: 10px;
   color: #26364f;
   font-size: 14px;
   line-height: 1.4;
   text-decoration: none;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .navigation-menu-item.active {
@@ -361,6 +367,132 @@ body, html {
 
 .navigation-menu-item.active svg {
   stroke: #1762e8;
+}
+
+.info-page {
+  width: min(920px, calc(100% - 32px));
+  margin: 36px auto;
+  padding: 32px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(18, 38, 63, 0.08);
+}
+
+.info-page-header {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.info-page-kicker {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #1762e8;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.info-page-header h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 26px;
+}
+
+.info-page-header p {
+  margin: 8px 0 0;
+  color: #667085;
+  line-height: 1.5;
+}
+
+.rules-grid,
+.contact-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.rules-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.contact-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.info-card,
+.contact-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.info-card {
+  padding: 18px;
+}
+
+.info-card h2,
+.contact-card h2 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: 16px;
+}
+
+.info-card p,
+.contact-card p {
+  margin: 0;
+  color: #667085;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.contact-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+}
+
+.contact-icon {
+  display: flex;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #eaf1ff;
+  color: #1762e8;
+  font-size: 20px;
+}
+
+.contact-link {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #1762e8;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dispatcher-phone {
+  margin: 0 0 8px !important;
+  color: #111827 !important;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.back-to-rooms-btn {
+  margin-top: 22px;
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  color: #26364f;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .modal-content {
@@ -1023,6 +1155,20 @@ body, html {
 }
 
 @media (max-width: 640px) {
+  .info-page {
+    margin: 20px auto;
+    padding: 20px 16px;
+  }
+
+  .info-page-header h1 {
+    font-size: 22px;
+  }
+
+  .rules-grid,
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+
   .status-panel-overlay {
     padding: 16px 10px;
   }
