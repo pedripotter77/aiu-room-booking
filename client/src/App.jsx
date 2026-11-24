@@ -89,6 +89,8 @@ function App() {
   const [purpose, setPurpose] = useState('Открытая лекция / Высшая математика');
   const [assigneeOrGroup, setAssigneeOrGroup] = useState('ИС 24-А');
   const [toast, setToast] = useState(null);
+  const [statusSearch, setStatusSearch] = useState('');
+  const [showAllStatusRooms, setShowAllStatusRooms] = useState(false);
 
   const [rooms, setRooms] = useState([
     {
@@ -184,6 +186,12 @@ function App() {
 
   const selectableRooms = freeRooms.filter((room) => Array.isArray(room.schedule) && room.schedule.length > 0);
   const selectedRoom = rooms.find((room) => room.id === bookingRoomId) || null;
+  const currentStatusRooms =
+    activeModal === 'free' ? freeRooms : activeModal === 'busy' ? busyRooms : activeModal === 'booked' ? bookedRooms : [];
+  const filteredStatusRooms = currentStatusRooms.filter((room) =>
+    `${room.number} ${room.type} ${room.status}`.toLowerCase().includes(statusSearch.trim().toLowerCase())
+  );
+  const visibleStatusRooms = showAllStatusRooms ? filteredStatusRooms : filteredStatusRooms.slice(0, 6);
 
   const toggleMenu = (event) => {
     if (activeModal === 'menu') {
@@ -203,7 +211,7 @@ function App() {
     if (!activeModal) return undefined;
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') setActiveModal(null); {
+      if (event.key === 'Escape') {
         setActiveModal(null);
         setBookingRoomId(null);
       }
@@ -299,11 +307,15 @@ function App() {
     );
   };
 
-  const getCurrentRoomsList = () => {
-    if (activeModal === 'free') return freeRooms;
-    if (activeModal === 'busy') return busyRooms;
-    if (activeModal === 'booked') return bookedRooms;
-    return [];
+  const openStatusPanel = (category) => {
+    if (activeModal === category) {
+      setActiveModal(null);
+      return;
+    }
+
+    setStatusSearch('');
+    setShowAllStatusRooms(false);
+    setActiveModal(category);
   };
 
   return (
@@ -394,11 +406,16 @@ function App() {
           <div className="rooms-grid-columns">
             
             <div className="status-column">
-              <div className="status-dropdown-header" onClick={() => setActiveModal('free')}>
+              <button
+                className={`status-dropdown-header ${activeModal === 'free' ? 'is-open' : ''}`}
+                type="button"
+                aria-expanded={activeModal === 'free'}
+                onClick={() => openStatusPanel('free')}
+              >
                 <span className="dot green"></span>
                 <span>Свободные ({freeRooms.length})</span>
-                <span className="arrow-icon">▼</span>
-             </div>
+                <span className="arrow-icon">{activeModal === 'free' ? '▲' : '▼'}</span>
+              </button>
               {freeRooms[0] && (
                 <div className="room-card">
                   <h3>{freeRooms[0].number}</h3>
@@ -416,11 +433,16 @@ function App() {
             </div>
 
             <div className="status-column">
-              <div className="status-dropdown-header" onClick={() => setActiveModal('busy')}>
+              <button
+                className={`status-dropdown-header ${activeModal === 'busy' ? 'is-open' : ''}`}
+                type="button"
+                aria-expanded={activeModal === 'busy'}
+                onClick={() => openStatusPanel('busy')}
+              >
                 <span className="dot red"></span>
                 <span>Заняты ({busyRooms.length})</span>
-                <span className="arrow-icon">▼</span>
-              </div>
+                <span className="arrow-icon">{activeModal === 'busy' ? '▲' : '▼'}</span>
+              </button>
               {busyRooms[0] && (
                 <div className="room-card">
                   <h3>{busyRooms[0].number}</h3>
@@ -431,11 +453,16 @@ function App() {
             </div>
 
             <div className="status-column">
-              <div className="status-dropdown-header" onClick={() => setActiveModal('booked')}>
+              <button
+                className={`status-dropdown-header ${activeModal === 'booked' ? 'is-open' : ''}`}
+                type="button"
+                aria-expanded={activeModal === 'booked'}
+                onClick={() => openStatusPanel('booked')}
+              >
                 <span className="dot yellow"></span>
                 <span>Забронировано ({bookedRooms.length})</span>
-                <span className="arrow-icon">▼</span>
-              </div>
+                <span className="arrow-icon">{activeModal === 'booked' ? '▲' : '▼'}</span>
+              </button>
               {bookedRooms[0] && (
                 <div className="room-card">
                   <h3>{bookedRooms[0].number}</h3>
@@ -447,44 +474,95 @@ function App() {
           </div>
         </div>
 
-        {activeModal && activeModal !== 'menu' && (
-          <div className="modal-overlay" onClick={() => setActiveModal(null)}>
-            <div className="modal-content" role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
-              <div className="modal-header">
-                <h2>
-                  {activeModal === 'free' && `🟢 ВСЕ СВОБОДНЫЕ (${freeRooms.length})`}
-                  {activeModal === 'busy' && `🔴 ВСЕ ЗАНЯТЫ (${busyRooms.length})`}
-                  {activeModal === 'booked' && `🟡 ВСЕ ЗАБРОНИРОВАНЫ (${bookedRooms.length})`}
-                </h2>
+        {['free', 'busy', 'booked'].includes(activeModal) && (
+          <div className="status-panel-overlay" onClick={() => setActiveModal(null)}>
+            <section
+              className={`status-panel status-panel-${activeModal}`}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="status-panel-title"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <header className="status-panel-header">
+                <div className="status-panel-heading">
+                  <h2 id="status-panel-title">
+                    <span className={`dot ${activeModal === 'free' ? 'green' : activeModal === 'busy' ? 'red' : 'yellow'}`} />
+                    {activeModal === 'free' && `ВСЕ СВОБОДНЫЕ (${freeRooms.length})`}
+                    {activeModal === 'busy' && `ВСЕ ЗАНЯТЫЕ (${busyRooms.length})`}
+                    {activeModal === 'booked' && `ВСЕ ЗАБРОНИРОВАННЫЕ (${bookedRooms.length})`}
+                  </h2>
+                  {activeModal === 'busy' && (
+                    <>
+                      <p>Главный корпус (А) <span>•</span> {busyRooms.length} кабинетов сейчас заняты</p>
+                      <div
+                        className="occupancy-progress"
+                        role="progressbar"
+                        aria-label="Доля занятых кабинетов в списке"
+                        aria-valuemin="0"
+                        aria-valuemax="100"
+                        aria-valuenow={Math.round((busyRooms.length / rooms.length) * 100)}
+                      >
+                        <span style={{ width: `${(busyRooms.length / rooms.length) * 100}%` }} />
+                      </div>
+                    </>
+                  )}
+                </div>
                 <button className="close-modal-btn" type="button" aria-label="Закрыть" onClick={() => setActiveModal(null)}>×</button>
+              </header>
+
+              <label className="status-search">
+                <span aria-hidden="true">⌕</span>
+                <input
+                  type="search"
+                  value={statusSearch}
+                  onChange={(event) => {
+                    setStatusSearch(event.target.value);
+                    setShowAllStatusRooms(false);
+                  }}
+                  placeholder="Поиск по кабинету или описанию..."
+                  aria-label="Поиск по кабинету или описанию"
+                />
+              </label>
+
+              <div className="status-panel-rooms">
+                {visibleStatusRooms.map((room) => (
+                  <article className="status-room-card" key={room.id}>
+                    <div className="status-room-info">
+                      <div className="status-room-title">
+                        <h3>{room.number}</h3>
+                        <span className="room-type-badge">{room.type}</span>
+                      </div>
+                      <p>{room.status}</p>
+                    </div>
+                    {activeModal === 'free' ? (
+                      <button className="modal-action-btn" type="button" onClick={() => openBookingModal(room.id)}>
+                        Забронировать
+                      </button>
+                    ) : (
+                      <span className={`room-status-pill ${activeModal === 'busy' ? 'busy' : 'booked'}`}>
+                        <span className="dot" />
+                        {activeModal === 'busy' ? 'Занято' : 'Забронировано'}
+                      </span>
+                    )}
+                  </article>
+                ))}
+                {visibleStatusRooms.length === 0 && (
+                  <p className="status-empty-state">По вашему запросу кабинеты не найдены.</p>
+                )}
               </div>
 
-              <div className="modal-rooms-list">
-                {getCurrentRoomsList().map((room) => (
-                  <div className="modal-room-item" key={room.id}>
-                    <div>
-                      <h4>{room.number}</h4>
-                      <p>{room.type} — <strong>{room.status}</strong></p>
-                    </div>
-                    {activeModal === 'free' && (
-                      <button
-                        className="modal-action-btn"
-                        type="button"
-                        onClick={() => openBookingModal(room.id)}
-                      >
-                        Бронь
-                      </button>
-                    )}
-                    {activeModal === 'busy' && (
-                      <span className="status-badge red-text">Занято</span>
-                    )}
-                    {activeModal === 'booked' && (
-                      <span className="status-badge yellow-text">Забронировано</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
+              <footer className="status-panel-footer">
+                <span>
+                  Показано {visibleStatusRooms.length} из {filteredStatusRooms.length} кабинетов <span>•</span> Корпус 7
+                </span>
+                {filteredStatusRooms.length > 6 && (
+                  <button type="button" onClick={() => setShowAllStatusRooms((isShowingAll) => !isShowingAll)}>
+                    {showAllStatusRooms ? 'Свернуть' : `Все (${filteredStatusRooms.length})`}
+                    <span aria-hidden="true">{showAllStatusRooms ? '↑' : '→'}</span>
+                  </button>
+                )}
+              </footer>
+            </section>
           </div>
         )}
 
