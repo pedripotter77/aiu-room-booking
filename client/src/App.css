@@ -62,6 +62,19 @@ body, html {
   gap: 15px;
 }
 
+.home-logo-btn {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.home-logo-btn:focus-visible {
+  outline: 2px solid #174ea6;
+  outline-offset: 4px;
+}
+
 .aiu-logo-img {
   height: 40px; 
   object-fit: contain;
