@@ -6,11 +6,13 @@ import { ContactsPage, RulesPage } from './components/InfoPages';
 import RoomsBoard from './components/RoomsBoard';
 import StatusPanel from './components/StatusPanel';
 import ROOMS_DATA from './data/roomsData';
+import ProfileModal from './components/ProfileModal';
 
 function App() {
   const [activeModal, setActiveModal] = useState(null);
   const [activePage, setActivePage] = useState('rooms');
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [profilePosition, setProfilePosition] = useState({ top: 0, left: 0, maxHeight: 0 });
   const [bookingRoomId, setBookingRoomId] = useState(null);
   const [role, setRole] = useState('teacher');
   const [selectedSlotIndex, setSelectedSlotIndex] = useState(null);
@@ -47,6 +49,18 @@ function App() {
       left: Math.max(16, Math.min(buttonBounds.left, window.innerWidth - 436)),
     });
     setActiveModal('menu');
+  };
+
+  const openProfile = (event) => {
+    const iconBounds = event.currentTarget.getBoundingClientRect();
+    const width = Math.min(460, window.innerWidth - 32);
+    const top = Math.min(iconBounds.bottom + 8, window.innerHeight - 16);
+    setProfilePosition({
+      top,
+      left: Math.max(16, Math.min(iconBounds.right - width, window.innerWidth - width - 16)),
+      maxHeight: Math.max(120, window.innerHeight - top - 16),
+    });
+    setActiveModal('profile');
   };
 
   useEffect(() => {
@@ -175,6 +189,7 @@ function App() {
           onMenuToggle={toggleMenu}
           onNavigate={handleNavigate}
           onCloseMenu={() => setActiveModal(null)}
+          onOpenProfile={openProfile}
         />
 
         {activePage === 'rooms' && (
@@ -216,6 +231,15 @@ function App() {
             onSubmit={handleSubmitBooking}
             onClose={() => setBookingRoomId(null)}
             onSelectRoom={setBookingRoomId}
+          />
+        )}
+
+         {activeModal === 'profile' && (
+           <ProfileModal
+             role={role}
+             setRole={setRole}
+             position={profilePosition}
+             onClose={() => setActiveModal(null)}
           />
         )}
       </main>

@@ -84,6 +84,7 @@ const ROOMS_DATA = [
   { id: 1103, number: 'Кабинет 1103', type: 'Компьютерный класс', category: 'booked', statusLabel: 'Забронировано', status: 'Забронирован преподавателем на 17:40', floor: 11, capacity: 25, schedule: [] },
   { id: 1107, number: 'Кабинет 1107', type: 'Обычный класс', category: 'booked', statusLabel: 'Забронировано', status: 'Забронирован преподавателем на 15:30', floor: 11, capacity: 30, schedule: [] },
   { id: 809, number: 'Кабинет 809', type: 'Обычный класс', category: 'booked', statusLabel: 'Забронировано', status: 'Забронирован преподавателем на 8:00', floor: 8, capacity: 30, schedule: [] },
+  { id: 306, number: 'Кабинет 306', type: 'Лекционный класс', category: 'booked', statusLabel: 'Забронировано', status: 'Забронирован преподавателем на 10:55', floor: 3, capacity: 50, schedule: [] }
 ];
 
 export default ROOMS_DATA;

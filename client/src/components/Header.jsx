@@ -10,6 +10,7 @@ function Header({
   onMenuToggle,
   onNavigate,
   onCloseMenu,
+  onOpenProfile,
 }) {
   return (
     <header className="top-header">
@@ -96,9 +97,9 @@ function Header({
         <div className="lang-switcher">
           <span>KZ</span> | <strong>RU</strong> | <span>EN</span>
         </div>
-        <div className="profile-icon">
+        <button className="profile-icon" type="button" aria-label="Открыть профиль" onClick={onOpenProfile}>
           <img src={icon} alt="Profile Icon" className="profile-icon-img" />
-        </div>
+        </button>
       </div>
     </header>
   );
