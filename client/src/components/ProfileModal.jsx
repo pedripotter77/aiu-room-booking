@@ -37,7 +37,15 @@ const PROFILE_DATA = {
   },
 };
 
-function ProfileModal({ role, setRole, position, onClose }) {
+function ProfileModal({
+  role,
+  setRole,
+  position,
+  bookingCounts,
+  onOpenMyBookings,
+  onOpenBookingManagement,
+  onClose,
+}) {
     const current = PROFILE_DATA[role];
 
     return (
@@ -129,13 +137,13 @@ function ProfileModal({ role, setRole, position, onClose }) {
           )}
 
           {role === 'teacher' && (
-            <button type="button" className="profile-action-row">
+            <button type="button" className="profile-action-row" onClick={onOpenMyBookings}>
               <span className="profile-row-left">
                 <span>📅</span>
                 <span>Мои бронирования</span>
               </span>
               <span className="profile-row-right">
-                <span className="profile-pill-blue">3 активных</span>
+                <span className="profile-pill-blue">{bookingCounts.pending} ожидают</span>
                 <span className="chevron">›</span>
               </span>
             </button>
@@ -143,17 +151,17 @@ function ProfileModal({ role, setRole, position, onClose }) {
 
           {role === 'admin' && (
             <>
-              <button type="button" className="profile-action-row">
+              <button type="button" className="profile-action-row" onClick={onOpenBookingManagement}>
                 <div>
                   <div className="profile-row-left">
                     <span>🔒</span>
                     <strong>Управление бронированиями</strong>
                   </div>
                   <div className="profile-disabled-sub">
-                    Доступно: просмотр, подтверждение и отмена броней всех аудиторий
+                    Рассмотрение заявок преподавателей
                   </div>
                 </div>
-                <span className="profile-pill-green">Все заявки</span>
+                <span className="profile-pill-green">{bookingCounts.pending} новых</span>
               </button>
 
               <button type="button" className="profile-action-row">

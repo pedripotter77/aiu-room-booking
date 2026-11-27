@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 import BookingModal from './components/BookingModal';
 import Header from './components/Header';
@@ -6,12 +6,62 @@ import { ContactsPage, RulesPage } from './components/InfoPages';
 import RoomsBoard from './components/RoomsBoard';
 import StatusPanel from './components/StatusPanel';
 import ROOMS_DATA from './data/roomsData';
+import { INITIAL_BOOKINGS } from './data/bookingsData';
+import BookingDashboard from './components/BookingDashboard';
 import ProfileModal from './components/ProfileModal';
+
+const TEACHER_NAME = 'Сергей Сергеев';
+const BOOKINGS_STORAGE_KEY = 'aiu-room-booking-bookings';
+
+function readStoredArray(key, fallback) {
+  try {
+    const stored = window.localStorage.getItem(key);
+    if (stored === null) return fallback;
+    const parsed = JSON.parse(stored);
+    if (!Array.isArray(parsed)) throw new Error('Stored value must be an array');
+    return parsed;
+  } catch (error) {
+    console.error(`Не удалось прочитать данные "${key}" из браузера:`, error);
+    return fallback;
+  }
+}
+
+function getLocalDate() {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function applyBookingToRooms(rooms, booking, status) {
+  if (booking.date !== getLocalDate()) return rooms;
+  return rooms.map((room) => {
+    if (room.id !== booking.roomId || !Array.isArray(room.schedule)) return room;
+    const schedule = room.schedule.map((slot, index) => {
+      if (index !== booking.slotIndex) return slot;
+      if (status === 'rejected') {
+        return {
+          ...slot,
+          status: booking.previousSlotStatus || 'free',
+          note: booking.previousSlotNote || 'СВОБОДНО (ДОСТУПНО К ЗАКРЕПЛЕНИЮ)',
+        };
+      }
+      return {
+        ...slot,
+        status: status === 'approved' ? 'booked' : 'pending',
+        note: `${status === 'approved' ? 'Одобрено' : 'Ожидает решения'}: ${booking.purpose}`,
+      };
+    });
+    return { ...room, schedule };
+  });
+}
 
 function App() {
   const [activeModal, setActiveModal] = useState(null);
   const [activePage, setActivePage] = useState('rooms');
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
+  const [statusPanelPosition, setStatusPanelPosition] = useState(null);
   const [profilePosition, setProfilePosition] = useState({ top: 0, left: 0, maxHeight: 0 });
   const [bookingRoomId, setBookingRoomId] = useState(null);
   const [role, setRole] = useState('teacher');
@@ -19,7 +69,25 @@ function App() {
   const [purpose, setPurpose] = useState('Открытая лекция / Высшая математика');
   const [assigneeOrGroup, setAssigneeOrGroup] = useState('ИС 24-А');
   const [toast, setToast] = useState(null);
-  const [rooms, setRooms] = useState(ROOMS_DATA);
+  const [bookings, setBookings] = useState(() =>
+    readStoredArray(BOOKINGS_STORAGE_KEY, INITIAL_BOOKINGS)
+  );
+  const rooms = useMemo(
+    () =>
+      bookings.reduce(
+        (currentRooms, booking) =>
+          booking.status === 'pending' || booking.status === 'approved'
+            ? applyBookingToRooms(currentRooms, booking, booking.status)
+            : currentRooms,
+        ROOMS_DATA
+      ),
+    [bookings]
+  );
+  const teacherBookings = bookings.filter((booking) => booking.teacher === TEACHER_NAME);
+  const bookingCounts = (role === 'admin' ? bookings : teacherBookings).reduce(
+    (counts, booking) => ({ ...counts, [booking.status]: counts[booking.status] + 1 }),
+    { pending: 0, approved: 0, rejected: 0 }
+  );
 
   const freeRooms = rooms.filter((room) => room.category === 'free');
   const busyRooms = rooms.filter((room) => room.category === 'busy');
@@ -78,6 +146,15 @@ function App() {
   }, [activeModal, bookingRoomId]);
 
   useEffect(() => {
+    try {
+      window.localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(bookings));
+    } catch (error) {
+      console.error('Не удалось сохранить бронирования в браузере:', error);
+      showToast('Не удалось сохранить бронирования в этом браузере');
+    }
+  }, [bookings]);
+
+  useEffect(() => {
     if (role === 'teacher') {
       setPurpose('Открытая лекция / Высшая математика');
       setAssigneeOrGroup('ИС 24-А');
@@ -101,6 +178,17 @@ function App() {
     setTimeout(() => {
       setToast((previousToast) => (previousToast === message ? null : previousToast));
     }, 3200);
+  };
+
+  const handleRoleChange = (nextRole) => {
+    setRole(nextRole);
+    if (nextRole === 'admin' && activePage === 'my-bookings') {
+      setActivePage('booking-management');
+    } else if (nextRole !== 'admin' && activePage === 'booking-management') {
+      setActivePage(nextRole === 'teacher' ? 'my-bookings' : 'rooms');
+    } else if (nextRole === 'student' && activePage === 'my-bookings') {
+      setActivePage('rooms');
+    }
   };
 
   const openBookingModal = (roomId) => {
@@ -128,31 +216,24 @@ function App() {
     }
 
     const isTeacher = role === 'teacher';
-    const nextStatus = isTeacher ? 'pending' : 'booked';
-    const nextNote = isTeacher
-      ? `Заявка отправлена (${assigneeOrGroup || 'Преподаватель'})`
-      : `Забронировано (${assigneeOrGroup || 'Админ'})`;
+    const booking = {
+      id: `booking-${Date.now()}`,
+      teacher: isTeacher ? TEACHER_NAME : 'Администратор AIU',
+      roomId: selectedRoom.id,
+      roomNumber: selectedRoom.number,
+      date: getLocalDate(),
+      slotIndex: selectedSlotIndex,
+      slot: chosenSlot.slot,
+      purpose: purpose.trim() || 'Не указана',
+      assignee: assigneeOrGroup.trim() || 'Не указана',
+      status: isTeacher ? 'pending' : 'approved',
+      rejectionReason: '',
+      previousSlotStatus: chosenSlot.status,
+      previousSlotNote: chosenSlot.note,
+      createdAt: new Date().toISOString(),
+    };
 
-    setRooms((previousRooms) =>
-      previousRooms.map((room) => {
-        if (room.id !== selectedRoom.id) return room;
-
-        const updatedSchedule = room.schedule.map((item, index) =>
-          index === selectedSlotIndex ? { ...item, status: nextStatus, note: nextNote } : item
-        );
-
-        const nextFreeIdx = updatedSchedule.findIndex((item) => item.status === 'free');
-        setSelectedSlotIndex(nextFreeIdx !== -1 ? nextFreeIdx : null);
-
-        return {
-          ...room,
-          schedule: updatedSchedule,
-          status: isTeacher
-            ? `Заявка на ${chosenSlot.slot}`
-            : `Забронировано на ${chosenSlot.slot}`,
-        };
-      })
-    );
+    setBookings((previousBookings) => [booking, ...previousBookings]);
 
     showToast(
       isTeacher
@@ -161,8 +242,65 @@ function App() {
     );
   };
 
-  const openStatusPanel = (category) => {
-    setActiveModal((currentModal) => (currentModal === category ? null : category));
+  const handleApproveBooking = (bookingId) => {
+    const booking = bookings.find((item) => item.id === bookingId);
+    if (!booking || booking.status !== 'pending') return;
+
+    setBookings((previousBookings) =>
+      previousBookings.map((item) =>
+        item.id === bookingId ? { ...item, status: 'approved' } : item
+      )
+    );
+    showToast(`Заявка преподавателя ${booking.teacher} одобрена`);
+  };
+
+  const handleRejectBooking = (bookingId, reason) => {
+    const booking = bookings.find((item) => item.id === bookingId);
+    if (!booking || booking.status !== 'pending') return;
+    if (!reason.trim()) {
+      showToast('Укажите обязательную причину отказа');
+      return;
+    }
+
+    setBookings((previousBookings) =>
+      previousBookings.map((item) =>
+        item.id === bookingId
+          ? { ...item, status: 'rejected', rejectionReason: reason.trim() }
+          : item
+      )
+    );
+    showToast(`Заявка отклонена. Причина будет видна преподавателю.`);
+  };
+
+  const openBookingsPage = (page) => {
+    setActivePage(page);
+    setActiveModal(null);
+  };
+
+  const openStatusPanel = (category, event) => {
+    if (activeModal === category) {
+      setActiveModal(null);
+      return;
+    }
+
+    const buttonBounds = event.currentTarget.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - buttonBounds.bottom - 16;
+    const spaceAbove = buttonBounds.top - 16;
+    const opensAbove = spaceBelow < 360 && spaceAbove > spaceBelow;
+
+    setStatusPanelPosition({
+      top: opensAbove ? buttonBounds.top - 8 : buttonBounds.bottom + 8,
+      left: Math.max(10, Math.min(buttonBounds.left, window.innerWidth - 576)),
+      placement: opensAbove ? 'above' : 'below',
+      maxHeight: Math.max(
+        120,
+        Math.min(
+          Math.round(window.innerHeight * 0.75),
+          (opensAbove ? spaceAbove : spaceBelow) - 8
+        )
+      ),
+    });
+    setActiveModal(category);
   };
 
   const handleNavigate = (page) => {
@@ -204,6 +342,17 @@ function App() {
         )}
         {activePage === 'rules' && <RulesPage onBackToRooms={() => setActivePage('rooms')} />}
         {activePage === 'contacts' && <ContactsPage onBackToRooms={() => setActivePage('rooms')} />}
+        {activePage === 'my-bookings' && role === 'teacher' && (
+          <BookingDashboard bookings={teacherBookings} />
+        )}
+        {activePage === 'booking-management' && role === 'admin' && (
+          <BookingDashboard
+            adminView
+            bookings={bookings}
+            onApprove={handleApproveBooking}
+            onReject={handleRejectBooking}
+          />
+        )}
 
         {['free', 'busy', 'booked'].includes(activeModal) && (
           <StatusPanel
@@ -211,6 +360,7 @@ function App() {
             category={activeModal}
             rooms={currentStatusRooms}
             totalRooms={rooms.length}
+            position={statusPanelPosition}
             onClose={() => setActiveModal(null)}
             onBook={openBookingModal}
           />
@@ -221,7 +371,7 @@ function App() {
             selectedRoom={selectedRoom}
             selectableRooms={selectableRooms}
             role={role}
-            setRole={setRole}
+            setRole={handleRoleChange}
             selectedSlotIndex={selectedSlotIndex}
             setSelectedSlotIndex={setSelectedSlotIndex}
             purpose={purpose}
@@ -237,8 +387,11 @@ function App() {
          {activeModal === 'profile' && (
            <ProfileModal
              role={role}
-             setRole={setRole}
+             setRole={handleRoleChange}
              position={profilePosition}
+             bookingCounts={bookingCounts}
+             onOpenMyBookings={() => openBookingsPage('my-bookings')}
+             onOpenBookingManagement={() => openBookingsPage('booking-management')}
              onClose={() => setActiveModal(null)}
           />
         )}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-function StatusPanel({ category, rooms, totalRooms, onClose, onBook }) {
+function StatusPanel({ category, rooms, totalRooms, position, onClose, onBook }) {
   const [statusSearch, setStatusSearch] = useState('');
   const [showAllRooms, setShowAllRooms] = useState(false);
 
@@ -19,6 +19,12 @@ function StatusPanel({ category, rooms, totalRooms, onClose, onBook }) {
     <div className="status-panel-overlay" onClick={onClose}>
       <section
         className={`status-panel status-panel-${category}`}
+        data-placement={position?.placement || 'below'}
+        style={{
+          top: position?.top ?? 64,
+          left: position?.left ?? 16,
+          maxHeight: position?.maxHeight ?? 'calc(100vh - 88px)',
+        }}
         role="dialog"
         aria-modal="true"
         aria-labelledby="status-panel-title"

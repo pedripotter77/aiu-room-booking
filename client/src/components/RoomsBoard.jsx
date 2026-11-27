@@ -18,7 +18,7 @@ function RoomsBoard({ freeRooms, busyRooms, bookedRooms, activeModal, onOpenStat
                 className={`status-dropdown-header ${isOpen ? 'is-open' : ''}`}
                 type="button"
                 aria-expanded={isOpen}
-                onClick={() => onOpenStatusPanel(category)}
+                onClick={(event) => onOpenStatusPanel(category, event)}
               >
                 <span className={`dot ${color}`}></span>
                 <span>{title} ({rooms.length})</span>
