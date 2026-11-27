@@ -44,6 +44,7 @@ function ProfileModal({
   bookingCounts,
   onOpenMyBookings,
   onOpenBookingManagement,
+  onOpenRoomManagement,
   onClose,
 }) {
     const current = PROFILE_DATA[role];
@@ -164,7 +165,7 @@ function ProfileModal({
                 <span className="profile-pill-green">{bookingCounts.pending} новых</span>
               </button>
 
-              <button type="button" className="profile-action-row">
+              <button type="button" className="profile-action-row" onClick={onOpenRoomManagement}>
                 <span className="profile-row-left">
                   <span>🖥️</span>
                   <strong>Управление аудиториями</strong>

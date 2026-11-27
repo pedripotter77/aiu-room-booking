@@ -5,13 +5,21 @@ import Header from './components/Header';
 import { ContactsPage, RulesPage } from './components/InfoPages';
 import RoomsBoard from './components/RoomsBoard';
 import StatusPanel from './components/StatusPanel';
-import ROOMS_DATA from './data/roomsData';
 import { INITIAL_BOOKINGS } from './data/bookingsData';
+import {
+  createInitialRoomInventory,
+  createRoomSchedule,
+  ROOM_TYPES,
+} from './data/roomInventory';
+import ROOMS_DATA from './data/roomsData';
 import BookingDashboard from './components/BookingDashboard';
 import ProfileModal from './components/ProfileModal';
+import RoomManagement from './components/RoomManagement';
 
 const TEACHER_NAME = 'Сергей Сергеев';
 const BOOKINGS_STORAGE_KEY = 'aiu-room-booking-bookings';
+const ROOMS_STORAGE_KEY = 'aiu-room-booking-inventory';
+const ROOM_REQUESTS_STORAGE_KEY = 'aiu-room-change-requests';
 
 function readStoredArray(key, fallback) {
   try {
@@ -32,6 +40,40 @@ function getLocalDate() {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function loadRoomInventory() {
+  const storedRooms = readStoredArray(ROOMS_STORAGE_KEY, null);
+  if (!storedRooms) return createInitialRoomInventory();
+
+  const originalRooms = new Map(ROOMS_DATA.map((room) => [room.id, room]));
+  return storedRooms.map((room) => {
+    const originalRoom = originalRooms.get(room.id);
+    if (originalRoom && (room.deleted || room.lastDirective)) {
+      return { ...originalRoom, configured: true, deleted: false };
+    }
+    if (room.deleted) {
+      return {
+        ...room,
+        type: room.id % 10 === 6 ? 'Лекционный класс' : 'Не указано',
+        category: 'unconfigured',
+        statusLabel: 'Не добавлен',
+        status: 'Нет данных о состоянии кабинета',
+        schedule: [],
+        configured: false,
+        deleted: false,
+        lastDirective: undefined,
+      };
+    }
+    if (room.lastDirective) {
+      return {
+        ...room,
+        type: room.id % 10 === 6 ? 'Лекционный класс' : 'Не указано',
+        lastDirective: undefined,
+      };
+    }
+    return room;
+  });
 }
 
 function applyBookingToRooms(rooms, booking, status) {
@@ -72,17 +114,33 @@ function App() {
   const [bookings, setBookings] = useState(() =>
     readStoredArray(BOOKINGS_STORAGE_KEY, INITIAL_BOOKINGS)
   );
-  const rooms = useMemo(
-    () =>
-      bookings.reduce(
-        (currentRooms, booking) =>
-          booking.status === 'pending' || booking.status === 'approved'
-            ? applyBookingToRooms(currentRooms, booking, booking.status)
-            : currentRooms,
-        ROOMS_DATA
-      ),
-    [bookings]
+  const [roomInventory, setRoomInventory] = useState(() =>
+    loadRoomInventory()
   );
+  const [roomRequests, setRoomRequests] = useState(() =>
+    readStoredArray(ROOM_REQUESTS_STORAGE_KEY, [])
+  );
+  const managedRooms = useMemo(
+    () =>
+      roomInventory.map((room) => {
+        const pendingManagementRequest = roomRequests.find(
+          (request) => request.roomId === room.id && request.status === 'pending'
+        );
+        const currentRoom =
+          !room.configured || room.deleted
+            ? room
+            : bookings.reduce(
+                (currentRooms, booking) =>
+                  booking.status === 'pending' || booking.status === 'approved'
+                    ? applyBookingToRooms(currentRooms, booking, booking.status)
+                    : currentRooms,
+                [room]
+              )[0];
+        return { ...currentRoom, pendingManagementRequest: Boolean(pendingManagementRequest) };
+      }),
+    [roomInventory, bookings, roomRequests]
+  );
+  const rooms = managedRooms.filter((room) => room.configured && !room.deleted);
   const teacherBookings = bookings.filter((booking) => booking.teacher === TEACHER_NAME);
   const bookingCounts = (role === 'admin' ? bookings : teacherBookings).reduce(
     (counts, booking) => ({ ...counts, [booking.status]: counts[booking.status] + 1 }),
@@ -155,6 +213,24 @@ function App() {
   }, [bookings]);
 
   useEffect(() => {
+    try {
+      window.localStorage.setItem(ROOMS_STORAGE_KEY, JSON.stringify(roomInventory));
+    } catch (error) {
+      console.error('Не удалось сохранить каталог кабинетов в браузере:', error);
+      showToast('Не удалось сохранить изменения каталога в этом браузере');
+    }
+  }, [roomInventory]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ROOM_REQUESTS_STORAGE_KEY, JSON.stringify(roomRequests));
+    } catch (error) {
+      console.error('Не удалось сохранить запросы на изменение кабинетов:', error);
+      showToast('Не удалось сохранить запросы в этом браузере');
+    }
+  }, [roomRequests]);
+
+  useEffect(() => {
     if (role === 'teacher') {
       setPurpose('Открытая лекция / Высшая математика');
       setAssigneeOrGroup('ИС 24-А');
@@ -188,7 +264,119 @@ function App() {
       setActivePage(nextRole === 'teacher' ? 'my-bookings' : 'rooms');
     } else if (nextRole === 'student' && activePage === 'my-bookings') {
       setActivePage('rooms');
+    } else if (nextRole !== 'admin' && activePage === 'room-management') {
+      setActivePage('rooms');
     }
+  };
+
+  const handleActivateRoom = (roomId, type) => {
+    if (role !== 'admin') return;
+    if (!ROOM_TYPES.includes(type)) {
+      showToast('Выберите допустимое предназначение кабинета');
+      return;
+    }
+    if (roomId % 10 === 6 && type !== 'Лекционный класс') {
+      showToast('Кабинеты с номером на 6 добавляются как лекционные');
+      return;
+    }
+
+    const room = roomInventory.find((item) => item.id === roomId);
+    if (!room || room.configured || room.deleted) {
+      showToast('Этот кабинет нельзя добавить повторно');
+      return;
+    }
+
+    setRoomInventory((previousRooms) =>
+      previousRooms.map((item) =>
+        item.id === roomId
+          ? {
+              ...item,
+              type,
+              category: 'free',
+              statusLabel: 'Свободен',
+              status: 'Не забронирован',
+              capacity: 30,
+              schedule: createRoomSchedule(),
+              configured: true,
+            }
+          : item
+      )
+    );
+    showToast(`${room.number} добавлен в каталог корпуса 7`);
+  };
+
+  const handleRequestRoomChange = (
+    roomId,
+    action,
+    requestedType,
+    directiveNumber,
+    directiveDate,
+    reason
+  ) => {
+    if (role !== 'admin') return false;
+    const room = roomInventory.find((item) => item.id === roomId && item.configured);
+    if (!room) {
+      showToast('Кабинет не найден или уже удалён');
+      return false;
+    }
+    if (!/^\d+$/.test(String(directiveNumber || ''))) {
+      showToast('Номер документа должен содержать только цифры');
+      return false;
+    }
+    const parsedDirectiveDate = new Date(`${directiveDate}T00:00:00`);
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(directiveDate) ||
+      Number.isNaN(parsedDirectiveDate.getTime()) ||
+      directiveDate > getLocalDate()
+    ) {
+      showToast('Укажите корректную дату документа не позднее сегодняшнего дня');
+      return false;
+    }
+    if (!String(reason || '').trim()) {
+      showToast('Укажите основание запроса');
+      return false;
+    }
+    if (action === 'change-type' && (!ROOM_TYPES.includes(requestedType) || requestedType === room.type)) {
+      showToast('Выберите новое предназначение кабинета');
+      return false;
+    }
+    if (action !== 'change-type' && action !== 'delete') {
+      showToast('Неизвестный тип запроса');
+      return false;
+    }
+    if (roomRequests.some((request) => request.roomId === roomId && request.status === 'pending')) {
+      showToast('Для этого кабинета уже есть запрос на рассмотрении');
+      return false;
+    }
+    if (
+      action === 'delete' &&
+      bookings.some(
+        (booking) =>
+          booking.roomId === roomId &&
+          booking.date >= getLocalDate() &&
+          (booking.status === 'pending' || booking.status === 'approved')
+      )
+    ) {
+      showToast('Нельзя запросить удаление: у кабинета есть ожидающее или одобренное бронирование');
+      return false;
+    }
+
+    const request = {
+      id: `room-request-${roomId}-${Date.now()}`,
+      roomId,
+      roomNumber: room.number,
+      action,
+      previousType: room.type,
+      requestedType: action === 'change-type' ? requestedType : null,
+      directiveNumber,
+      directiveDate,
+      reason: String(reason).trim(),
+      status: 'pending',
+      submittedAt: new Date().toISOString(),
+    };
+    setRoomRequests((previousRequests) => [request, ...previousRequests]);
+    showToast('Запрос отправлен высшему руководству. Кабинет пока не изменён.');
+    return true;
   };
 
   const openBookingModal = (roomId) => {
@@ -353,6 +541,15 @@ function App() {
             onReject={handleRejectBooking}
           />
         )}
+        {activePage === 'room-management' && role === 'admin' && (
+          <RoomManagement
+            rooms={managedRooms}
+            bookings={bookings}
+            requests={roomRequests}
+            onActivateRoom={handleActivateRoom}
+            onRequestChange={handleRequestRoomChange}
+          />
+        )}
 
         {['free', 'busy', 'booked'].includes(activeModal) && (
           <StatusPanel
@@ -392,6 +589,7 @@ function App() {
              bookingCounts={bookingCounts}
              onOpenMyBookings={() => openBookingsPage('my-bookings')}
              onOpenBookingManagement={() => openBookingsPage('booking-management')}
+             onOpenRoomManagement={() => openBookingsPage('room-management')}
              onClose={() => setActiveModal(null)}
           />
         )}
