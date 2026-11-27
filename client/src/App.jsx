@@ -15,6 +15,7 @@ import ROOMS_DATA from './data/roomsData';
 import BookingDashboard from './components/BookingDashboard';
 import ProfileModal from './components/ProfileModal';
 import RoomManagement from './components/RoomManagement';
+import UserProfilePage from './components/UserProfilePage';
 
 const TEACHER_NAME = 'Сергей Сергеев';
 const BOOKINGS_STORAGE_KEY = 'aiu-room-booking-bookings';
@@ -258,6 +259,9 @@ function App() {
 
   const handleRoleChange = (nextRole) => {
     setRole(nextRole);
+    if (activePage === 'my-profile') {
+      return;
+    }
     if (nextRole === 'admin' && activePage === 'my-bookings') {
       setActivePage('booking-management');
     } else if (nextRole !== 'admin' && activePage === 'booking-management') {
@@ -530,6 +534,7 @@ function App() {
         )}
         {activePage === 'rules' && <RulesPage onBackToRooms={() => setActivePage('rooms')} />}
         {activePage === 'contacts' && <ContactsPage onBackToRooms={() => setActivePage('rooms')} />}
+        {activePage === 'my-profile' && <UserProfilePage role={role} />}
         {activePage === 'my-bookings' && role === 'teacher' && (
           <BookingDashboard bookings={teacherBookings} />
         )}
@@ -587,6 +592,7 @@ function App() {
              setRole={handleRoleChange}
              position={profilePosition}
              bookingCounts={bookingCounts}
+             onOpenMyProfile={() => openBookingsPage('my-profile')}
              onOpenMyBookings={() => openBookingsPage('my-bookings')}
              onOpenBookingManagement={() => openBookingsPage('booking-management')}
              onOpenRoomManagement={() => openBookingsPage('room-management')}

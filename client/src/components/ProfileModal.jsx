@@ -2,15 +2,16 @@ import icon from '../assets/profile_icon.png';
 
 const PROFILE_DATA = {
     student: {
-        name: 'Eraly',
+        name: 'Ералы Куанышкали',
         role: 'student',
-        handle: '@noname',
+        handle: '@eraly_kuanyshkali',
         badge: null,
         onlineDot: false,
         meta: [
-            { label: 'Роль:', value: 'Student' },
-            { label: 'Курс:', value: '2' },
-            { label: 'Высшая школа:', value: 'Информационные технологии'},
+            { label: 'Курс:', value: '2 курс' },
+            { label: 'Высшая школа:', value: 'Информационных технологий и инженерии' },
+            { label: 'Группа:', value: 'ВТиПО 25-Б' },
+            { label: 'Почта:', value: 'e•••••••••••••••@aiu.edu.kz' },
         ], 
     },
     teacher: {
@@ -19,7 +20,7 @@ const PROFILE_DATA = {
     badge: null,
     onlineDot: false,
     meta: [
-      { label: 'Роль:', value: 'Professor' },
+      { label: 'Роль:', value: 'Преподаватель' },
       { label: 'Высшая школа:', value: 'Педагогический институт' },
       { label: 'Кафедра:', value: 'Естественно-научные дисциплины' },
     ],
@@ -30,8 +31,8 @@ const PROFILE_DATA = {
     badge: 'ADMIN',
     onlineDot: true,
     meta: [
-      { label: 'Роль:', value: 'Administrator (Администратор системы)' },
-      { label: 'Доступ:', value: 'Полный доступ (Корпус 7)' },
+      { label: 'Роль:', value: 'Администратор системы' },
+      { label: 'Доступ:', value: 'Управление корпусом 7' },
       { label: 'Подразделение:', value: 'Департамент диспетчеризации и расписания' },
     ],
   },
@@ -42,6 +43,7 @@ function ProfileModal({
   setRole,
   position,
   bookingCounts,
+  onOpenMyProfile,
   onOpenMyBookings,
   onOpenBookingManagement,
   onOpenRoomManagement,
@@ -121,7 +123,7 @@ function ProfileModal({
         </div>
 
         <div className="profile-actions-list">
-          <button type="button" className="profile-action-row">
+          <button type="button" className="profile-action-row" onClick={onOpenMyProfile}>
             <span>Мой профиль</span>
             {role !== 'student' && <span className="chevron">›</span>}
           </button>

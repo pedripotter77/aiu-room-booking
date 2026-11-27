@@ -2014,6 +2014,151 @@ body, html {
   cursor: pointer;
 }
 
+.user-profile-page {
+  width: min(1000px, calc(100% - 48px));
+  margin: 36px auto;
+}
+
+.user-profile-page-header {
+  margin-bottom: 20px;
+}
+
+.user-profile-page-header .info-page-kicker {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: #1762e8;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.user-profile-page-header h1 {
+  margin: 0;
+  color: #111827;
+  font-size: 28px;
+}
+
+.user-profile-page-header p {
+  margin: 8px 0 0;
+  color: #667085;
+  line-height: 1.5;
+}
+
+.user-profile-card {
+  padding: 28px;
+  border: 1px solid #e8edf4;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(18, 38, 63, 0.08);
+}
+
+.user-profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.user-profile-avatar {
+  display: grid;
+  width: 76px;
+  height: 76px;
+  flex: 0 0 76px;
+  place-items: center;
+  border-radius: 50%;
+  background: #090d16;
+}
+
+.user-profile-avatar img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  filter: invert(1);
+}
+
+.user-profile-role {
+  display: inline-block;
+  margin-bottom: 6px;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.user-profile-role.student { color: #1762e8; }
+.user-profile-role.teacher { color: #047857; }
+.user-profile-role.admin { color: #7c3aed; }
+
+.user-profile-name-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-profile-name-row h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 22px;
+}
+
+.user-profile-identity p {
+  margin: 5px 0 0;
+  color: #667085;
+  font-size: 14px;
+}
+
+.user-profile-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding-top: 22px;
+}
+
+.user-profile-detail {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+  padding: 15px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.user-profile-detail.email {
+  grid-column: 1 / -1;
+}
+
+.user-profile-detail span {
+  color: #667085;
+  font-size: 12px;
+}
+
+.user-profile-detail strong {
+  color: #1f2937;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.user-profile-detail small {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.user-profile-demo-note {
+  margin: 18px 0 0;
+  padding: 11px 13px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .booking-dashboard {
   width: min(1120px, calc(100% - 48px));
   margin: 36px auto;
@@ -2278,6 +2423,44 @@ body, html {
 }
 
 @media (max-width: 640px) {
+  .user-profile-page {
+    width: calc(100% - 24px);
+    margin: 18px auto;
+  }
+
+  .user-profile-card {
+    padding: 20px 16px;
+  }
+
+  .user-profile-identity {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .user-profile-avatar {
+    width: 56px;
+    height: 56px;
+    flex-basis: 56px;
+  }
+
+  .user-profile-avatar img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .user-profile-name-row h2 {
+    font-size: 18px;
+  }
+
+  .user-profile-details {
+    grid-template-columns: 1fr;
+    padding-top: 16px;
+  }
+
+  .user-profile-detail.email {
+    grid-column: auto;
+  }
+
   .booking-dashboard {
     width: calc(100% - 24px);
     margin: 16px auto;
