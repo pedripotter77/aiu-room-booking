@@ -1,4 +1,5 @@
 import icon from '../assets/profile_icon.png';
+import './ProfileModal.css';
 
 const PROFILE_DATA = {
     student: {

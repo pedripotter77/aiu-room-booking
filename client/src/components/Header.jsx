@@ -1,6 +1,7 @@
 import logo from '../assets/aiu.png';
 import icon from '../assets/profile_icon.png';
 import notificationIcon from '../assets/notification.png';
+import './Header.css';
 
 function Header({
   activeModal,

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import './App.css';
+import './styles/theme.css';
 import BookingModal from './components/BookingModal';
 import Header from './components/Header';
 import { ContactsPage, RulesPage } from './components/InfoPages';

@@ -1,3 +1,5 @@
+import './SettingsModal.css';
+
 function SettingsModal({
   settings,
   onChange,

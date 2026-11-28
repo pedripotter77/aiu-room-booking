@@ -1,0 +1,39 @@
+.app-layout.theme-dark {
+  background: #0f172a;
+  color: #e5e7eb;
+}
+
+.app-layout.theme-dark .top-header,
+.app-layout.theme-dark .content-area,
+.app-layout.theme-dark .search-input {
+  background: #111827;
+  color: #e5e7eb;
+}
+
+.app-layout.theme-dark .top-header {
+  border-bottom-color: #334155;
+}
+
+.app-layout.theme-dark .header-title h1,
+.app-layout.theme-dark .lang-switcher strong {
+  color: #e5e7eb;
+}
+
+.app-layout.theme-dark .lang-switcher,
+.app-layout.theme-dark .lang-switcher button {
+  color: #94a3b8;
+}
+
+.app-layout.theme-dark .search-input {
+  border-color: #475569;
+}
+
+.app-layout.compact-mode .top-header {
+  height: 64px;
+  padding-block: 8px;
+}
+
+.app-layout.compact-mode .profile-modal-card,
+.app-layout.compact-mode .navigation-modal {
+  padding: 12px 16px;
+}

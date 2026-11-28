@@ -1,4 +1,5 @@
 import icon from '../assets/profile_icon.png';
+import './UserProfilePage.css';
 
 const USER_PROFILES = {
   student: {
