@@ -47,6 +47,8 @@ function ProfileModal({
   onOpenMyBookings,
   onOpenBookingManagement,
   onOpenRoomManagement,
+  onOpenSettings,
+  currentLanguage,
   onClose,
 }) {
     const current = PROFILE_DATA[role];
@@ -180,7 +182,7 @@ function ProfileModal({
             </>
           )}
 
-          <button type="button" className="profile-action-row">
+          <button type="button" className="profile-action-row" onClick={onOpenSettings}>
             <span>Настройки</span>
             {role !== 'student' && <span className="chevron">›</span>}
           </button>
@@ -188,7 +190,7 @@ function ProfileModal({
 
         <div className="profile-footer-row">
           <span>
-            Язык: <strong>RU</strong>
+            Язык: <strong>{currentLanguage}</strong>
           </span>
           <button type="button" className="profile-logout-btn">
             Выйти

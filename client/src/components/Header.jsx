@@ -11,6 +11,9 @@ function Header({
   onNavigate,
   onCloseMenu,
   onOpenProfile,
+  language,
+  onLanguageChange,
+  notificationsEnabled,
 }) {
   return (
     <header className="top-header">
@@ -91,11 +94,25 @@ function Header({
       </div>
 
       <div className="header-right-actions">
-        <button className="notification-btn" aria-label="Notifications">
+        <button
+          className="notification-btn"
+          aria-label="Notifications"
+          disabled={!notificationsEnabled}
+          title={notificationsEnabled ? 'Уведомления включены' : 'Уведомления выключены'}
+        >
           <img src={notificationIcon} alt="Notifications" />
         </button>
         <div className="lang-switcher">
-          <span>KZ</span> | <strong>RU</strong> | <span>EN</span>
+          {['KZ', 'RU', 'EN'].map((item, index) => (
+            <span key={item}>
+              {index > 0 && ' | '}
+              {language === item ? (
+                <strong>{item}</strong>
+              ) : (
+                <button type="button" onClick={() => onLanguageChange(item)}>{item}</button>
+              )}
+            </span>
+          ))}
         </div>
         <button className="profile-icon" type="button" aria-label="Открыть профиль" onClick={onOpenProfile}>
           <img src={icon} alt="Profile Icon" className="profile-icon-img" />

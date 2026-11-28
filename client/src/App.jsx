@@ -16,11 +16,30 @@ import BookingDashboard from './components/BookingDashboard';
 import ProfileModal from './components/ProfileModal';
 import RoomManagement from './components/RoomManagement';
 import UserProfilePage from './components/UserProfilePage';
+import SettingsModal from './components/SettingsModal';
 
 const TEACHER_NAME = 'Сергей Сергеев';
 const BOOKINGS_STORAGE_KEY = 'aiu-room-booking-bookings';
 const ROOMS_STORAGE_KEY = 'aiu-room-booking-inventory';
 const ROOM_REQUESTS_STORAGE_KEY = 'aiu-room-change-requests';
+const SETTINGS_STORAGE_KEY = 'aiu-room-booking-settings';
+const DEFAULT_SETTINGS = {
+  language: 'RU',
+  theme: 'light',
+  compact: false,
+  notifications: true,
+};
+
+function loadSettings() {
+  try {
+    const stored = window.localStorage.getItem(SETTINGS_STORAGE_KEY);
+    if (!stored) return DEFAULT_SETTINGS;
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+  } catch (error) {
+    console.error('Не удалось прочитать настройки интерфейса:', error);
+    return DEFAULT_SETTINGS;
+  }
+}
 
 function readStoredArray(key, fallback) {
   try {
@@ -106,6 +125,7 @@ function App() {
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0 });
   const [statusPanelPosition, setStatusPanelPosition] = useState(null);
   const [profilePosition, setProfilePosition] = useState({ top: 0, left: 0, maxHeight: 0 });
+  const [settings, setSettings] = useState(loadSettings);
   const [bookingRoomId, setBookingRoomId] = useState(null);
   const [role, setRole] = useState('teacher');
   const [selectedSlotIndex, setSelectedSlotIndex] = useState(null);
@@ -230,6 +250,14 @@ function App() {
       showToast('Не удалось сохранить запросы в этом браузере');
     }
   }, [roomRequests]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    } catch (error) {
+      console.error('Не удалось сохранить настройки интерфейса:', error);
+    }
+  }, [settings]);
 
   useEffect(() => {
     if (role === 'teacher') {
@@ -507,7 +535,13 @@ function App() {
   };
 
   return (
-    <div className="app-layout">
+    <div
+      className={[
+        'app-layout',
+        settings.theme === 'dark' ? 'theme-dark' : '',
+        settings.compact ? 'compact-mode' : '',
+      ].filter(Boolean).join(' ')}
+    >
       {toast && <div className="toast-banner">{toast}</div>}
 
       <main className="content-area">
@@ -520,6 +554,9 @@ function App() {
           onNavigate={handleNavigate}
           onCloseMenu={() => setActiveModal(null)}
           onOpenProfile={openProfile}
+          language={settings.language}
+          onLanguageChange={(language) => setSettings((current) => ({ ...current, language }))}
+          notificationsEnabled={settings.notifications}
         />
 
         {activePage === 'rooms' && (
@@ -596,7 +633,17 @@ function App() {
              onOpenMyBookings={() => openBookingsPage('my-bookings')}
              onOpenBookingManagement={() => openBookingsPage('booking-management')}
              onOpenRoomManagement={() => openBookingsPage('room-management')}
+             onOpenSettings={() => setActiveModal('settings')}
+             currentLanguage={settings.language}
              onClose={() => setActiveModal(null)}
+          />
+        )}
+        {activeModal === 'settings' && (
+          <SettingsModal
+            settings={settings}
+            onChange={setSettings}
+            onReset={() => setSettings(DEFAULT_SETTINGS)}
+            onClose={() => setActiveModal(null)}
           />
         )}
       </main>
